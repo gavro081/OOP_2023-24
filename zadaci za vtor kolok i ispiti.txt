@@ -1,0 +1,4456 @@
+Oop zadaci za vezbanje za vtor kolok i ispiti
+Ctrl f → zadaca {broj}
+Zadaca 1
+#include <iostream>
+#include <cstring>
+
+
+using namespace std;
+
+
+class Book{
+protected:
+   char isbn[20];
+   char title[50];
+   char author[30];
+   float price;
+public:
+   virtual ~Book(){}
+
+
+   virtual float bookPrice(){return price;};
+
+
+   virtual bool operator>(const Book& ob){
+       return price > ob.price;
+   }
+
+
+   friend ostream& operator<<(ostream& COUT, Book& ob){
+       COUT << ob.isbn << ": " << ob.title << ", " << ob.author << " " << ob.bookPrice() << '\n';
+       return COUT;
+   }
+};
+
+
+class OnlineBook : public Book{
+   char *url;
+   int size;
+public:
+
+
+   OnlineBook(char* isbn, char* title, char* author, float price, char* url, int size ){
+       this->size = size;
+       this->price = (size > 20) ? (1.2*price) : price;
+       strcpy(this->isbn, isbn);
+       strcpy(this->title, title);
+       strcpy(this->author, author);
+       this->url = new char[strlen(url) + 1];
+       strcpy(this->url, url);
+   }
+
+
+   OnlineBook(const OnlineBook& ob){
+       size = ob.size;
+       this->price = ob.price;
+       strcpy(this->isbn, ob.isbn);
+       strcpy(this->title, ob.title);
+       strcpy(this->author, ob.author);
+       this->url = new char[strlen(ob.url) + 1];
+       strcpy(this->url, ob.url);
+   }
+
+
+   OnlineBook& operator=(const OnlineBook& ob){
+       size = ob.size;
+       this->price = ob.price;
+       strcpy(this->isbn, ob.isbn);
+       strcpy(this->title, ob.title);
+       strcpy(this->author, ob.author);
+       this->url = new char[strlen(ob.url) + 1];
+       strcpy(this->url, ob.url);
+       return *this;
+   }
+
+
+   float bookPrice() {
+       return price;
+   }
+
+
+   using Book::operator>;
+
+
+   friend ostream& operator<<(ostream& COUT, OnlineBook& ob){
+       COUT << ob.isbn << ": " << ob.title << ", " << ob.author << " " << ob.bookPrice() << '\n';
+       return COUT;
+   }
+
+
+   void setISBN(char* isbn){
+       strcpy(this->isbn, isbn);
+   }
+};
+
+
+class PrintBook : public Book{
+   float weight;
+   bool inStock;
+public:
+   PrintBook(char* isbn,  char* title,  char* author, float price, float weight , bool inStock ){
+       this->weight = weight;
+       this->inStock = inStock;
+       this->price = (weight > 0.7) ? (price * 1.15) : price;
+       strcpy(this->isbn, isbn);
+       strcpy(this->title, title);
+       strcpy(this->author, author);
+   }
+
+
+   float bookPrice() override {
+       return price;
+   }
+
+
+   using Book::operator>;
+
+
+   friend ostream& operator<<(ostream& COUT, PrintBook& ob){
+       COUT << ob.isbn << ": " << ob.title << ", " << ob.author << " " << ob.bookPrice() << '\n';
+       return COUT;
+   }
+};
+
+
+void mostExpensiveBook (Book** books, int n){
+   int ctrO = 0, ctrP = 0;
+   for (int i = 0; i < n; ++i) {
+       OnlineBook *O = dynamic_cast<OnlineBook *>(books[i]);
+       PrintBook *P = dynamic_cast<PrintBook *>(books[i]);
+       if (O) ctrO++;
+       if (P) ctrP++;
+   }
+   cout << "FINKI-Education\n";
+   cout << "Total number of online books: " << ctrO << '\n';
+   cout << "Total number of print books: " << ctrP << '\n';
+
+
+   int maxI = 0;
+   float maxPrice = 0.0;
+   for (int i = 0; i < n; ++i) {
+       if (books[i]->bookPrice() > maxPrice) {
+           maxI = i;
+           maxPrice = books[i]->bookPrice();
+       }
+   }
+   cout << "The most expensive book is: \n" << *books[maxI] << '\n';
+}
+
+
+int main(){
+
+
+   char isbn[20], title[50], author[30], url[100];
+   int size, tip;
+   float price, weight;
+   bool inStock;
+   Book  **books;
+   int n;
+
+
+   int testCase;
+   cin >> testCase;
+
+
+   if (testCase == 1){
+       cout << "====== Testing OnlineBook class ======" << endl;
+       cin >> n;
+       books = new Book *[n];
+
+
+       for (int i = 0; i < n; i++){
+           cin >> isbn;
+           cin.get();
+           cin.getline(title, 50);
+           cin.getline(author, 30);
+           cin >> price;
+           cin >> url;
+           cin >> size;
+           cout << "CONSTRUCTOR" << endl;
+           books[i] = new OnlineBook(isbn, title, author, price, url, size);
+           cout << "OPERATOR <<" << endl;
+           cout << *books[i];
+       }
+       cout << "OPERATOR >" << endl;
+       cout << "Rezultat od sporedbata e: " << endl;
+       if (*books[0] > *books[1])
+           cout << *books[0];
+       else
+           cout << *books[1];
+   }
+   if (testCase == 2){
+       cout << "====== Testing OnlineBook CONSTRUCTORS ======" << endl;
+       cin >> isbn;
+       cin.get();
+       cin.getline(title, 50);
+       cin.getline(author, 30);
+       cin >> price;
+       cin >> url;
+       cin >> size;
+       cout << "CONSTRUCTOR" << endl;
+       OnlineBook ob1(isbn, title, author, price, url, size);
+       cout << ob1 << endl;
+       cout << "COPY CONSTRUCTOR" << endl;
+       OnlineBook ob2(ob1);
+       cin >> isbn;
+       ob2.setISBN(isbn);
+       cout << ob1 << endl;
+       cout << ob2 << endl;
+       cout << "OPERATOR =" << endl;
+       ob1 = ob2;
+       cin >> isbn;
+       ob2.setISBN(isbn);
+       cout << ob1 << endl;
+       cout << ob2 << endl;
+   }
+   if (testCase == 3){
+       cout << "====== Testing PrintBook class ======" << endl;
+       cin >> n;
+       books = new Book *[n];
+
+
+       for (int i = 0; i < n; i++){
+           cin >> isbn;
+           cin.get();
+           cin.getline(title, 50);
+           cin.getline(author, 30);
+           cin >> price;
+           cin >> weight;
+           cin >> inStock;
+           cout << "CONSTRUCTOR" << endl;
+           books[i] = new PrintBook(isbn, title, author, price, weight, inStock);
+           cout << "OPERATOR <<" << endl;
+           cout << *books[i];
+       }
+       cout << "OPERATOR >" << endl;
+       cout << "Rezultat od sporedbata e: " << endl;
+       if (*books[0] > *books[1])
+           cout << *books[0];
+       else
+           cout << *books[1];
+   }
+   if (testCase == 4){
+       cout << "====== Testing method mostExpensiveBook() ======" << endl;
+       cin >> n;
+       books = new Book *[n];
+
+
+       for (int i = 0; i<n; i++){
+
+
+           cin >> tip >> isbn;
+           cin.get();
+           cin.getline(title, 50);
+           cin.getline(author, 30);
+           cin >> price;
+           if (tip == 1) {
+
+
+               cin >> url;
+               cin >> size;
+
+
+               books[i] = new OnlineBook(isbn, title, author, price, url, size);
+
+
+           }
+           else {
+               cin >> weight;
+               cin >> inStock;
+
+
+               books[i] = new PrintBook(isbn, title, author, price, weight, inStock);
+           }
+       }
+
+
+       mostExpensiveBook(books, n);
+   }
+
+
+   for (int i = 0; i < n; i++) delete books[i];
+   delete[] books;
+   return 0;
+}
+
+Zadaca 2
+// vashiot kod ovde
+#include <iostream>
+#include <cstring>
+
+
+using namespace std;
+
+
+class Vozac{
+protected:
+   char ime[100];
+   int vozrast;
+   int trki;
+   bool daliVeteran;
+public:
+   Vozac(const char* ime, int vozrast, int trki, bool daliVeteran)
+   : vozrast(vozrast), trki(trki), daliVeteran(daliVeteran){
+       strcpy(this->ime, ime);
+   }
+
+
+   friend ostream& operator<<(ostream& COUT, const Vozac& ob){
+       COUT << ob.ime << '\n' << ob.vozrast << '\n' << ob.trki << '\n';
+       if (ob.daliVeteran) COUT << "VETERAN\n";
+       return COUT;
+   }
+
+
+   virtual double getZarabotuvacka()=0;
+
+
+   virtual bool operator==(Vozac& ob){
+       return getZarabotuvacka() == ob.getZarabotuvacka();
+   }
+
+
+   virtual double danok()=0;
+};
+
+
+class Avtomobilist : public Vozac{
+   double cena;
+public:
+   Avtomobilist(const char* ime, int vozrast, int trki, bool daliVeteran, double cena) :
+   cena(cena), Vozac(ime,vozrast,trki,daliVeteran){}
+
+
+   using Vozac::operator==;
+
+
+   double getZarabotuvacka() override{
+       return cena / 5;
+   }
+
+
+   double danok()override{
+       return (trki > 10) ? 0.15 * getZarabotuvacka() : 0.1 * getZarabotuvacka();
+   }
+};
+
+
+class Motociklist : public Vozac{
+   int moknost;
+public:
+   Motociklist(const char* ime, int vozrast, int trki, bool daliVeteran, int moknost)
+   : moknost(moknost), Vozac(ime,vozrast, trki, daliVeteran){}
+
+
+   double getZarabotuvacka() override{
+       return moknost * 20;
+   }
+   double danok()override{
+       return (daliVeteran) ? 0.25 * getZarabotuvacka() : 0.2 * getZarabotuvacka();
+   }
+};
+
+
+int soIstaZarabotuvachka(Vozac **vozaci, int n, Vozac* v){
+   int ctr = 0;
+   double reper = v->getZarabotuvacka();
+   for (int i = 0; i < n; ++i) {
+       vozaci[i]->getZarabotuvacka();
+       if (vozaci[i]->getZarabotuvacka() == reper) ctr++;
+   }
+   return ctr;
+}
+
+
+int main() {
+   int n, x;
+   cin >> n >> x;
+   Vozac **v = new Vozac*[n];
+   char ime[100];
+   int vozrast;
+   int trki;
+   bool vet;
+   for(int i = 0; i < n; ++i) {
+       cin >> ime >> vozrast >> trki >> vet;
+       if(i < x) {
+           float cena_avto;
+           cin >> cena_avto;
+           v[i] = new Avtomobilist(ime, vozrast, trki, vet, cena_avto);
+       } else {
+           int mokjnost;
+           cin >> mokjnost;
+           v[i] = new Motociklist(ime, vozrast, trki, vet, mokjnost);
+       }
+   }
+   cout << "=== DANOK ===" << endl;
+   for(int i = 0; i < n; ++i) {
+       cout << *v[i];
+       cout << v[i]->danok() << endl;
+   }
+   cin >> ime >> vozrast >> trki >> vet;
+   int mokjnost;
+   cin >> mokjnost;
+   Vozac *vx = new Motociklist(ime, vozrast, trki, vet, mokjnost);
+   cout << "=== VOZAC X ===" << endl;
+   cout << *vx;
+   cout << "=== SO ISTA ZARABOTUVACKA KAKO VOZAC X ===" << endl;
+   cout << soIstaZarabotuvachka(v, n, vx);
+   for(int i = 0; i < n; ++i) {
+       delete v[i];
+   }
+   delete [] v;
+   delete vx;
+   return 0;
+}
+
+
+Zadaca 3
+#include<iostream>
+#include<cstring>
+using namespace std;
+
+
+class NoCourseException{
+public:
+   void print(int i){
+       cout << "Demonstratorot so indeks " << i << " ne drzi laboratoriski vezbi\n";
+   }
+};
+
+
+class Kurs{
+private:
+   char ime[20];
+   int krediti;
+public:
+   Kurs (char *ime,int krediti){
+       strcpy(this->ime,ime);
+       this->krediti=krediti;
+   }
+   Kurs (){
+       strcpy(this->ime,"");
+       krediti=0;
+   }
+   bool operator==(const char *ime) const{
+       return strcmp(this->ime,ime)==0;
+   }
+   char const * getIme()const{
+       return ime;
+   }
+   void pecati ()const{cout<<ime<<" "<<krediti<<"ECTS";}
+
+
+};
+
+
+class Student{
+private:
+   int *ocenki;
+   int brojOcenki;
+
+
+protected:
+   int indeks;
+
+
+public:
+   Student(int indeks,int *ocenki, int brojOcenki){
+       this->indeks=indeks;
+       this->brojOcenki=brojOcenki;
+       this->ocenki=new int[brojOcenki];
+       for (int i=0;i<brojOcenki;i++) this->ocenki[i]=ocenki[i];
+   }
+   Student(const Student &k){
+       this->indeks=k.indeks;
+       this->brojOcenki=k.brojOcenki;
+       this->ocenki=new int[k.brojOcenki];
+       for (int i=0;i<k.brojOcenki;i++) this->ocenki[i]=k.ocenki[i];
+   }
+   Student operator=(const Student &k){
+       if (&k==this) return *this;
+       this->indeks=k.indeks;
+       this->brojOcenki=k.brojOcenki;
+       delete [] ocenki;
+       this->ocenki=new int[k.brojOcenki];
+       for (int i=0;i<k.brojOcenki;i++) this->ocenki[i]=k.ocenki[i];
+       return *this;
+   }
+
+
+   ~Student(){delete [] ocenki;}
+
+
+   //dopolni ja klasata
+   virtual int getBodovi(){
+       int ctr = 0;
+       for (int i = 0; i < brojOcenki; ++i) {
+           if (ocenki[i] > 5) ctr++;
+       }
+       double preodni = (double)ctr / brojOcenki;
+       return preodni * 100;
+   }
+
+
+   virtual void pecati(){
+       cout << indeks;
+   }
+};
+
+
+class Predavach{
+private:
+   Kurs kursevi[10];
+   int brojKursevi;
+
+
+protected:
+   char *imeIPrezime;
+
+
+public:
+   Predavach(char *imeIPrezime,Kurs *kursevi,int brojKursevi){
+       this->brojKursevi=brojKursevi;
+       for (int i=0;i<brojKursevi;i++) this->kursevi[i]=kursevi[i];
+       this->imeIPrezime=new char[strlen(imeIPrezime)+1];
+       strcpy(this->imeIPrezime,imeIPrezime);
+   }
+   Predavach(const Predavach &p){
+       this->brojKursevi=p.brojKursevi;
+       for (int i=0;i<p.brojKursevi;i++) this->kursevi[i]=p.kursevi[i];
+       this->imeIPrezime=new char[strlen(p.imeIPrezime)+1];
+       strcpy(this->imeIPrezime,p.imeIPrezime);
+   }
+   Predavach operator=(const Predavach &p){
+       if (this==&p) return *this;
+       this->brojKursevi=p.brojKursevi;
+       for (int i=0;i<p.brojKursevi;i++) this->kursevi[i]=p.kursevi[i];
+       this->imeIPrezime=new char[strlen(p.imeIPrezime)+1];
+       delete [] imeIPrezime;
+       strcpy(this->imeIPrezime,p.imeIPrezime);
+       return *this;
+   }
+   ~Predavach(){delete [] imeIPrezime;}
+
+
+   int getBrojKursevi()const {return brojKursevi;}
+
+
+   char * const getImeIPrezime()const {return imeIPrezime;}
+
+
+   Kurs operator[](int i) const {
+       if (i<brojKursevi&&i>=0)
+           return kursevi[i];
+       else return Kurs();
+   }
+
+
+   void pecati() const  {
+       cout<<imeIPrezime<<" (";
+       for (int i=0;i<brojKursevi;i++){
+           kursevi[i].pecati();
+           if (i<brojKursevi-1) cout<<", ";  else cout<<")";
+       }
+   }
+};
+
+
+
+
+//mesto za vashiot kod
+class Demonstrator : public Student, public Predavach{
+   int casovi;
+public:
+   Demonstrator(int indeks,int *ocenki, int brojOcenki, char *ime, Kurs *kursevi, int n, int casovi)
+           : Student(indeks,ocenki,brojOcenki), Predavach(ime, kursevi, n){
+       this->casovi = casovi;
+   }
+
+
+   int getBodovi() override{
+       try{
+           if (this->getBrojKursevi() == 0) throw NoCourseException();
+       }
+       catch (NoCourseException) {
+           NoCourseException().print(indeks);
+           return 0;
+       }
+       return Student::getBodovi() + 20 * casovi / this->getBrojKursevi();
+   }
+
+
+   void pecati() override {
+       Student::pecati();
+       cout << ": ";
+       Predavach::pecati();
+   }
+};
+
+
+Student& vratiNajdobroRangiran(Student ** studenti, int n){
+   int maxI = 0;
+   int maxPoeni = 0;
+   int bodovi;
+   for (int i = 0; i < n; ++i) {
+       bodovi = studenti[i]->getBodovi();
+       if (bodovi > maxPoeni){
+           maxPoeni = bodovi;
+           maxI = i;
+       }
+   }
+   return *studenti[maxI];
+}
+
+
+void pecatiDemonstratoriKurs (char* kurs, Student** studenti, int n){
+   for (int i = 0; i < n; ++i) {
+       Demonstrator* d = dynamic_cast<Demonstrator *>(studenti[i]);
+       if (d){
+           for (int j = 0; j < d->getBrojKursevi(); ++j) {
+               if (d->operator[](j) == kurs) {
+                   d->pecati();
+                   cout << '\n';
+               }
+           }
+       }
+   }
+}
+
+
+
+
+int main(){
+
+
+   Kurs kursevi[10];
+   int indeks,brojKursevi, ocenki[20],ocenka,brojOcenki,tip,brojCasovi,krediti;
+   char ime[20],imeIPrezime[50];
+
+
+   cin>>tip;
+
+
+   if (tip==1) //test class Demonstrator
+   {
+       cout<<"-----TEST Demonstrator-----"<<endl;
+       cin>>indeks>>brojOcenki;
+       for (int i=0;i<brojOcenki;i++){
+           cin>>ocenka;
+           ocenki[i]=ocenka;
+       }
+       cin>>imeIPrezime>>brojKursevi;
+       for (int i=0;i<brojKursevi;i++){
+           cin>>ime>>krediti;
+           kursevi[i]=Kurs(ime,krediti);
+       }
+       cin>>brojCasovi;
+
+
+       Demonstrator d(indeks,ocenki,brojOcenki,imeIPrezime,kursevi,brojKursevi,brojCasovi);
+       cout<<"Objekt od klasata Demonstrator e kreiran";
+
+
+   } else if (tip==2) //funkcija pecati vo Student
+   {
+       cout<<"-----TEST pecati-----"<<endl;
+       cin>>indeks>>brojOcenki;
+       for (int i=0;i<brojOcenki;i++){
+           cin>>ocenka;
+           ocenki[i]=ocenka;
+       }
+
+
+       Student s(indeks,ocenki,brojOcenki);
+       s.pecati();
+
+
+   } else if (tip==3) //funkcija getVkupnaOcenka vo Student
+   {
+       cout<<"-----TEST getVkupnaOcenka-----"<<endl;
+       cin>>indeks>>brojOcenki;
+       for (int i=0;i<brojOcenki;i++){
+           cin>>ocenka;
+           ocenki[i]=ocenka;
+       }
+       Student s(indeks,ocenki,brojOcenki);
+       cout<<"Broj na bodovi: "<<s.getBodovi()<<endl;
+
+
+   } else if (tip==4) //funkcija getVkupnaOcenka vo Demonstrator
+   {
+       cout<<"-----TEST getVkupnaOcenka-----"<<endl;
+       cin>>indeks>>brojOcenki;
+       for (int i=0;i<brojOcenki;i++){
+           cin>>ocenka;
+           ocenki[i]=ocenka;
+       }
+       cin>>imeIPrezime>>brojKursevi;
+       for (int i=0;i<brojKursevi;i++){
+           cin>>ime>>krediti;
+           kursevi[i]=Kurs(ime,krediti);
+       }
+       cin>>brojCasovi;
+
+
+       Demonstrator d(indeks,ocenki,brojOcenki,imeIPrezime,kursevi,brojKursevi,brojCasovi);
+       cout<<"Broj na bodovi: "<<d.getBodovi()<<endl;
+
+
+   } else if (tip==5) //funkcija pecati vo Demonstrator
+   {
+       cout<<"-----TEST pecati -----"<<endl;
+       cin>>indeks>>brojOcenki;
+       for (int i=0;i<brojOcenki;i++){
+           cin>>ocenka;
+           ocenki[i]=ocenka;
+       }
+       cin>>imeIPrezime>>brojKursevi;
+       for (int i=0;i<brojKursevi;i++){
+           cin>>ime>>krediti;
+           kursevi[i]=Kurs(ime,krediti);
+       }
+       cin>>brojCasovi;
+
+
+       Demonstrator d(indeks,ocenki,brojOcenki,imeIPrezime,kursevi,brojKursevi,brojCasovi);
+       d.pecati();
+
+
+   } else if (tip==6) //site klasi
+   {
+       cout<<"-----TEST Student i Demonstrator-----"<<endl;
+       cin>>indeks>>brojOcenki;
+       for (int i=0;i<brojOcenki;i++){
+           cin>>ocenka;
+           ocenki[i]=ocenka;
+       }
+       cin>>imeIPrezime>>brojKursevi;
+       for (int i=0;i<brojKursevi;i++){
+           cin>>ime>>krediti;
+           kursevi[i]=Kurs(ime,krediti);
+       }
+       cin>>brojCasovi;
+
+
+       Student *s=new Demonstrator(indeks,ocenki,brojOcenki,imeIPrezime,kursevi,brojKursevi,brojCasovi);
+       s->pecati();
+       cout<<"\nBroj na bodovi: "<<s->getBodovi()<<endl;
+       delete s;
+
+
+
+
+   } else if (tip==7) //funkcija vratiNajdobroRangiran
+   {
+       cout<<"-----TEST vratiNajdobroRangiran-----"<<endl;
+       int k, opt;
+       cin>>k;
+       Student **studenti=new Student*[k];
+       for (int j=0;j<k;j++){
+           cin>>opt; //1 Student 2 Demonstrator
+           cin>>indeks>>brojOcenki;
+           for (int i=0;i<brojOcenki;i++)
+           {
+               cin>>ocenka;
+               ocenki[i]=ocenka;
+           }
+           if (opt==1){
+               studenti[j]=new Student(indeks,ocenki,brojOcenki);
+           }else{
+               cin>>imeIPrezime>>brojKursevi;
+               for (int i=0;i<brojKursevi;i++){
+                   cin>>ime>>krediti;
+                   kursevi[i]=Kurs(ime,krediti);
+               }
+               cin>>brojCasovi;
+               studenti[j]=new Demonstrator(indeks,ocenki,brojOcenki,imeIPrezime,kursevi,brojKursevi,brojCasovi);
+           }
+       }
+       Student& najdobar=vratiNajdobroRangiran(studenti,k);
+       cout<<"Maksimalniot broj na bodovi e:"<<najdobar.getBodovi();
+       cout<<"\nNajdobro rangiran:";
+       najdobar.pecati();
+
+
+       for (int j=0;j<k;j++) delete studenti[j];
+       delete [] studenti;
+   } else if (tip==8) //funkcija pecatiDemonstratoriKurs
+   {
+       cout<<"-----TEST pecatiDemonstratoriKurs-----"<<endl;
+       int k, opt;
+       cin>>k;
+       Student **studenti=new Student*[k];
+       for (int j=0;j<k;j++){
+           cin>>opt; //1 Student 2 Demonstrator
+           cin>>indeks>>brojOcenki;
+           for (int i=0;i<brojOcenki;i++)
+           {
+               cin>>ocenka;
+               ocenki[i]=ocenka;
+           }
+           if (opt==1){
+               studenti[j]=new Student(indeks,ocenki,brojOcenki);
+           }else{
+               cin>>imeIPrezime>>brojKursevi;
+               for (int i=0;i<brojKursevi;i++)
+               {
+                   cin>>ime>>krediti;
+                   kursevi[i]=Kurs(ime,krediti);
+               }
+               cin>>brojCasovi;
+               studenti[j]=new Demonstrator(indeks,ocenki,brojOcenki,imeIPrezime,kursevi,brojKursevi,brojCasovi);
+           }
+       }
+       char kurs[20];
+       cin>>kurs;
+       cout<<"Demonstratori na "<<kurs<<" se:"<<endl;
+       pecatiDemonstratoriKurs (kurs,studenti,k);
+       for (int j=0;j<k;j++) delete studenti[j];
+       delete [] studenti;
+
+
+   }
+
+
+
+
+   return 0;
+}
+
+Zadaca 4
+#include <cstring>
+#include <iostream>
+using namespace std;
+
+
+// Your Code goes here
+
+
+enum Size {small, big, family};
+const char *sizes[] = {"small", "big", "family"};
+
+
+class Pizza{
+protected:
+   char name[20];
+   char ingredients[100];
+   double basePrice;
+public:
+   virtual double price(){return basePrice;}
+
+
+   bool operator<(Pizza& ob){
+       return this->price() < ob.price();
+   }
+
+
+   friend ostream& operator<<(ostream& COUT, Pizza& ob){
+       COUT << ob.name << ": " << ob.ingredients;
+       return COUT;
+   }
+
+
+};
+
+
+class FlatPizza : public Pizza{
+   Size size = small;
+public:
+   FlatPizza(char *name, char* ingredients, double basePrice){
+       strcpy(this->name, name);
+       strcpy(this->ingredients, ingredients);
+       this->basePrice = basePrice;
+   }
+   FlatPizza(char *name, char* ingredients, double basePrice, Size size){
+       strcpy(this->name, name);
+       strcpy(this->ingredients, ingredients);
+       this->basePrice = basePrice;
+       this->size = size;
+   }
+
+
+   double price()override{
+       if (size == 0) return basePrice * 1.1;
+       if (size == 1) return basePrice * 1.2;
+       if (size == 2) return basePrice * 1.3;
+       return basePrice;
+   }
+
+
+   using Pizza::operator<;
+
+
+   friend ostream& operator<<(ostream& COUT, FlatPizza& ob){
+       COUT << ob.name << ": " << ob.ingredients << ", " << sizes[ob.size] << " - " << ob.price() << '\n';
+       return COUT;
+   }
+
+
+};
+
+
+class FoldedPizza : public Pizza{
+   bool whiteFlour = true;
+public:
+   FoldedPizza(char *name, char* ingredients, double basePrice, bool whiteFlour){
+       strcpy(this->name, name);
+       strcpy(this->ingredients, ingredients);
+       this->basePrice = basePrice;
+       this->whiteFlour = whiteFlour;
+   }
+   FoldedPizza(char *name, char* ingredients, double basePrice){
+       strcpy(this->name, name);
+       strcpy(this->ingredients, ingredients);
+       this->basePrice = basePrice;
+   }
+
+
+   double price()override{
+       return (whiteFlour) ? basePrice * 1.1 : basePrice * 1.3;
+   }
+
+
+   using Pizza::operator<;
+
+
+   friend ostream& operator<<(ostream& COUT, FoldedPizza& ob){
+       COUT << ob.name << ": " << ob.ingredients << ", ";
+       COUT << ((ob.whiteFlour) ? "wf" : "nwf");
+       COUT << " - " << ob.price() << '\n';
+       return COUT;
+   }
+
+
+   void setWhiteFlour(bool wf) {whiteFlour = wf;}
+};
+
+
+void expensivePizza(Pizza** pizzas, int n){
+   int maxI = 0;
+   double maxPrice = 0.0;
+   for (int i = 0; i < n; ++i) {
+       if (pizzas[i]->price() > maxPrice) {
+           maxPrice = pizzas[i]->price();
+           maxI = i;
+       }
+   }
+   FlatPizza *fp1 = dynamic_cast<FlatPizza *>(pizzas[maxI]);
+   FoldedPizza *fp2 = dynamic_cast<FoldedPizza *>(pizzas[maxI]);
+   if (fp1) cout << *fp1;
+   else cout << *fp2;
+}
+
+
+// Testing
+
+
+int main() {
+   int test_case;
+   char name[20];
+   char ingredients[100];
+   float inPrice;
+   Size size;
+   bool whiteFlour;
+
+
+   cin >> test_case;
+   if (test_case == 1) {
+       // Test Case FlatPizza - Constructor, operator <<, price
+       cin.get();
+       cin.getline(name,20);
+       cin.getline(ingredients,100);
+       cin >> inPrice;
+       FlatPizza fp(name, ingredients, inPrice);
+       cout << fp;
+   } else if (test_case == 2) {
+       // Test Case FlatPizza - Constructor, operator <<, price
+       cin.get();
+       cin.getline(name,20);
+       cin.getline(ingredients,100);
+       cin >> inPrice;
+       int s;
+       cin>>s;
+       FlatPizza fp(name, ingredients, inPrice, (Size)s);
+       cout << fp;
+
+
+   } else if (test_case == 3) {
+       // Test Case FoldedPizza - Constructor, operator <<, price
+       cin.get();
+       cin.getline(name,20);
+       cin.getline(ingredients,100);
+       cin >> inPrice;
+       FoldedPizza fp(name, ingredients, inPrice);
+       cout << fp;
+   } else if (test_case == 4) {
+       // Test Case FoldedPizza - Constructor, operator <<, price
+       cin.get();
+       cin.getline(name,20);
+       cin.getline(ingredients,100);
+       cin >> inPrice;
+       FoldedPizza fp(name, ingredients, inPrice);
+       fp.setWhiteFlour(false);
+       cout << fp;
+
+
+   } else if (test_case == 5) {
+       // Test Cast - operator <, price
+       int s;
+
+
+       cin.get();
+       cin.getline(name,20);
+       cin.getline(ingredients,100);
+       cin >> inPrice;
+       cin>>s;
+       FlatPizza *fp1 = new FlatPizza(name, ingredients, inPrice, (Size)s);
+       cout << *fp1;
+
+
+       cin.get();
+       cin.getline(name,20);
+       cin.getline(ingredients,100);
+       cin >> inPrice;
+       cin>>s;
+       FlatPizza *fp2 = new FlatPizza(name, ingredients, inPrice, (Size)s);
+       cout << *fp2;
+
+
+       cin.get();
+       cin.getline(name,20);
+       cin.getline(ingredients,100);
+       cin >> inPrice;
+       FoldedPizza *fp3 = new FoldedPizza(name, ingredients, inPrice);
+       cout << *fp3;
+
+
+       cin.get();
+       cin.getline(name,20);
+       cin.getline(ingredients,100);
+       cin >> inPrice;
+       FoldedPizza *fp4 = new FoldedPizza(name, ingredients, inPrice);
+       fp4->setWhiteFlour(false);
+       cout << *fp4;
+
+
+       cout<<"Lower price: "<<endl;
+       if(*fp1<*fp2)
+           cout<<fp1->price()<<endl;
+       else cout<<fp2->price()<<endl;
+
+
+       if(*fp1<*fp3)
+           cout<<fp1->price()<<endl;
+       else cout<<fp3->price()<<endl;
+
+
+       if(*fp4<*fp2)
+           cout<<fp4->price()<<endl;
+       else cout<<fp2->price()<<endl;
+
+
+       if(*fp3<*fp4)
+           cout<<fp3->price()<<endl;
+       else cout<<fp4->price()<<endl;
+
+
+   } else if (test_case == 6) {
+       // Test Cast - expensivePizza
+       int num_p;
+       int pizza_type;
+
+
+       cin >> num_p;
+       Pizza **pi = new Pizza *[num_p];
+       for (int j = 0; j < num_p; ++j) {
+
+
+           cin >> pizza_type;
+           if (pizza_type == 1) {
+               cin.get();
+               cin.getline(name,20);
+
+
+               cin.getline(ingredients,100);
+               cin >> inPrice;
+               int s;
+               cin>>s;
+               FlatPizza *fp = new FlatPizza(name, ingredients, inPrice, (Size)s);
+               cout << (*fp);
+               pi[j] = fp;
+           }
+           if (pizza_type == 2) {
+
+
+               cin.get();
+               cin.getline(name,20);
+               cin.getline(ingredients,100);
+               cin >> inPrice;
+               FoldedPizza *fp =
+                       new FoldedPizza (name, ingredients, inPrice);
+               if(j%2)
+                   (*fp).setWhiteFlour(false);
+               cout << (*fp);
+               pi[j] = fp;
+
+
+           }
+       }
+
+
+       cout << endl;
+       cout << "The most expensive pizza:\n";
+       expensivePizza(pi,num_p);
+
+
+
+
+   }
+   return 0;
+}
+Zadaca 5
+#include <iostream>
+#include <cstring>
+
+
+#define MAX 50
+using namespace std;
+
+
+class UserExistsException {
+public:
+   void print() {
+       cout << "The user already exists in the list!\n";
+   }
+};
+
+
+const char *kupuvaci[] = {"standard", "loyal", "vip"};
+enum typeC {
+   standardni,
+   lojalni,
+   vip
+};
+
+
+class Customer {
+   char ime[50];
+   char adresa[50];
+   typeC vid;
+   static int osn_popust;
+   static int dop_popust;
+   int kupeni;
+public:
+   Customer() {}
+
+
+   Customer(char *ime, char *adresa, typeC vid, int kupeni) {
+       strcpy(this->ime, ime);
+       strcpy(this->adresa, adresa);
+       this->vid = vid;
+       this->kupeni = kupeni;
+   }
+
+
+   static void setDiscount1(int num) { osn_popust = num; }
+
+
+   int najdiPopust() {
+       if (vid == 0) return 0;
+       if (vid == 1) return osn_popust;
+       if (vid == 2) return osn_popust + dop_popust;
+       return -1;
+   }
+
+
+   friend ostream &operator<<(ostream &out, Customer &ob) {
+       out << ob.ime << '\n' << ob.adresa << '\n' << ob.kupeni <<
+           '\n' << kupuvaci[ob.vid] << ' ' << ob.najdiPopust() << "\n";
+       return out;
+   }
+
+
+   int getKupeni(){return kupeni;}
+   typeC getVid(){return vid;}
+   void setVid(int a) {vid = typeC(a);}
+   char* getAdresa () { return adresa;}
+};
+
+
+int Customer::osn_popust = 10;
+int Customer::dop_popust = 20;
+
+
+class FINKI_bookstore {
+   Customer *customers;
+   int n;
+public:
+   FINKI_bookstore() {
+       customers = nullptr;
+       n = 0;
+   }
+
+
+   void setCustomers(Customer* customers, int n){
+       this->customers = new Customer[n];
+       for (int i = 0; i < n; ++i) {
+           this->customers[i] = customers[i];
+       }
+       this->n = n;
+   }
+
+
+   FINKI_bookstore &operator+=(Customer &ob) {
+       Customer *temp = new Customer[n + 1];
+       for (int i = 0; i < n; ++i) {
+           if (strcmp(customers[i].getAdresa(),ob.getAdresa())==0) throw UserExistsException();
+           temp[i] = customers[i];
+       }
+       temp[n++] = ob;
+       delete [] customers;
+       customers = temp;
+       return *this;
+   }
+
+
+   void update(){
+       for (int i = 0; i < n; ++i) {
+           if (customers[i].getKupeni() > 5 && customers[i].getVid() == 0)
+               customers[i].setVid(1);
+           else if (customers[i].getKupeni() > 10 && customers[i].getVid() == 1)
+               customers[i].setVid(2);
+       }
+   }
+
+
+   friend ostream& operator<<(ostream &out,FINKI_bookstore& ob){
+       for (int i = 0; i < ob.n; ++i) {
+           out << ob.customers[i];
+       }
+       out << '\n';
+       return out;
+   }
+
+
+};
+
+
+int main() {
+   int testCase;
+   cin >> testCase;
+
+
+   char name[MAX];
+   char email[MAX];
+   int tC;
+   int discount;
+   int numProducts;
+
+
+
+
+   if (testCase == 1){
+       cout << "===== Test Case - Customer Class ======" << endl;
+       cin.get();
+       cin.getline(name,MAX);
+       cin.getline(email,MAX);
+       cin >> tC;
+       cin >> numProducts;
+       cout << "===== CONSTRUCTOR ======" << endl;
+       Customer c(name, email, (typeC) tC, numProducts);
+       cout << c;
+
+
+   }
+
+
+   if (testCase == 2){
+       cout << "===== Test Case - Static Members ======" << endl;
+       cin.get();
+       cin.getline(name,MAX);
+       cin.getline(email,MAX);
+       cin >> tC;
+       cin >> numProducts;
+       cout << "===== CONSTRUCTOR ======" << endl;
+       Customer c(name, email, (typeC) tC, numProducts);
+       cout << c;
+
+
+       c.setDiscount1(5);
+
+
+       cout << c;
+   }
+
+
+   if (testCase == 3){
+       cout << "===== Test Case - FINKI-bookstore ======" << endl;
+       FINKI_bookstore fc;
+       int n;
+       cin >> n;
+       Customer customers[MAX];
+       for(int i = 0; i < n; ++i) {
+           cin.get();
+           cin.getline(name,MAX);
+           cin.getline(email,MAX);
+           cin >> tC;
+           cin >> numProducts;
+           Customer c(name, email, (typeC) tC, numProducts);
+           customers[i] = c;
+       }
+
+
+       fc.setCustomers(customers, n);
+
+
+       cout << fc <<endl;
+   }
+
+
+   if (testCase == 4){
+       cout << "===== Test Case - operator+= ======" << endl;
+       FINKI_bookstore fc;
+       int n;
+       cin >> n;
+       Customer customers[MAX];
+       for(int i = 0; i < n; ++i) {
+           cin.get();
+           cin.getline(name,MAX);
+           cin.getline(email,MAX);
+           cin >> tC;
+           cin >> numProducts;
+           Customer c(name, email, (typeC) tC, numProducts);
+           customers[i] = c;
+       }
+
+
+       fc.setCustomers(customers, n);
+       cout << "OPERATOR +=" << endl;
+       cin.get();
+       cin.getline(name,MAX);
+       cin.getline(email,MAX);
+       cin >> tC;
+       cin >> numProducts;
+       Customer c(name, email, (typeC) tC, numProducts);
+       try {
+           fc += c;
+       }
+       catch (UserExistsException) {
+           UserExistsException().print();
+       }
+       cout << fc;
+   }
+
+
+   if (testCase == 5){
+       cout << "===== Test Case - operator+= (exception) ======" << endl;
+       FINKI_bookstore fc;
+       int n;
+       cin >> n;
+       Customer customers[MAX];
+       for(int i = 0; i < n; ++i) {
+           cin.get();
+           cin.getline(name,MAX);
+           cin.getline(email,MAX);
+           cin >> tC;
+           cin >> numProducts;
+           Customer c(name, email, (typeC) tC, numProducts);
+           customers[i] = c;
+       }
+
+
+       fc.setCustomers(customers, n);
+       cout << "OPERATOR +=" << endl;
+       cin.get();
+       cin.getline(name,MAX);
+       cin.getline(email,MAX);
+       cin >> tC;
+       cin >> numProducts;
+       Customer c(name, email, (typeC) tC, numProducts);
+       try {
+           fc += c;
+       }
+       catch (UserExistsException) {
+           UserExistsException().print();
+       }
+
+
+       cout << fc;
+   }
+
+
+   if (testCase == 6){
+       cout << "===== Test Case - update method  ======" << endl << endl;
+       FINKI_bookstore fc;
+       int n;
+       cin >> n;
+       Customer customers[MAX];
+       for(int i = 0; i < n; ++i) {
+           cin.get();
+           cin.getline(name,MAX);
+           cin.getline(email,MAX);
+           cin >> tC;
+           cin >> numProducts;
+           Customer c(name, email, (typeC) tC, numProducts);
+           customers[i] = c;
+       }
+
+
+       fc.setCustomers(customers, n);
+
+
+       cout << "Update:" << endl;
+       fc.update();
+       cout << fc;
+   }
+   return 0;
+}
+Zadaca 6
+#include <iostream>
+#include <cstring>
+#include <cmath>
+
+
+using namespace std;
+
+
+class ExistingGame {
+public:
+   static void message() {
+       cout << "The game is already in the collection\n";
+   }
+};
+
+
+int broj_na_meseci(int mes1, int god1, int mes2, int god2) {
+   if (god2 == god1) return mes2 - mes1;
+   else if (god2 - god1 == 1) return (12 - mes1) + mes2;
+   else return (12 - mes1) + mes2 + ((god2 - god1) * 12);
+}
+
+
+class Game {
+protected:
+   char ime[100];
+   float cena;
+   bool rasprodazba;
+public:
+   Game(const char *ime = "", float cena = -1, bool rasprodazba = false) {
+       strcpy(this->ime, ime);
+       this->cena = cena;
+       this->rasprodazba = rasprodazba;
+   }
+
+
+   virtual bool operator==(Game &ob) {
+       return (strcmp(ime, ob.ime) == 0);
+   }
+
+
+   friend istream &operator>>(istream &CIN, Game &ob) {
+       CIN.get();
+       CIN.getline(ob.ime, 100);
+       CIN >> ob.cena;
+       CIN >> ob.rasprodazba;
+       // tuka
+       return CIN;
+   }
+
+
+   friend ostream &operator<<(ostream &out, Game &ob) {
+       out << "Game: " << ob.ime << ", regular price: $" << ob.cena;
+       if (ob.getRasprodazba()) out << ", bought on sale";
+       out << '\n';
+       return out;
+   }
+
+
+   char *getIme() { return ime; }
+
+
+   virtual float getCena() {
+       if (rasprodazba) return cena*0.3;
+       return cena;
+   }
+
+
+   bool getRasprodazba() { return rasprodazba; }
+
+
+   void setCena(float num) { this->cena = num; }
+};
+
+
+class SubscriptionGame : public Game {
+private:
+   float nadomest;
+   unsigned int mesec;
+   unsigned int god;
+public:
+   SubscriptionGame(const char *ime = "", float cena = -1, bool rasprodazba = false,
+                    float nadomest = 0.0, unsigned int mesec = 0, unsigned int god = 0)
+           : Game(ime, cena, rasprodazba) {
+       this->nadomest = nadomest;
+       this->mesec = mesec;
+       this->god = god;
+   }
+   SubscriptionGame (const SubscriptionGame& ob){
+       strcpy(this->ime, ob.ime);
+       this->cena = ob.cena;
+       this->rasprodazba = ob.rasprodazba;
+       this->nadomest = ob.nadomest;
+       this->mesec = ob.mesec;
+       this->god = ob.god;
+   }
+
+
+   friend istream &operator>>(istream &CIN, SubscriptionGame &ob) {
+       CIN.get();
+       CIN.getline(ob.ime, 100);
+       CIN >> ob.cena;
+       CIN >> ob.rasprodazba;
+       CIN >> ob.nadomest;
+       CIN >> ob.mesec;
+       CIN >> ob.god;
+       return CIN;
+   }
+
+
+   friend ostream &operator<<(ostream &out, SubscriptionGame &ob) {
+       out << "Game: " << ob.ime << ", regular price: $" << ob.cena;
+       if (ob.getRasprodazba()) out << ", bought on sale";
+       out << ", monthly fee: $" << ob.nadomest << ", purchased: " <<
+           ob.mesec << '-' << ob.god << '\n';
+       return out;
+   }
+
+
+   using Game::operator==;
+
+
+   float getCena() override{
+       float cena = Game::getCena();
+       cena += broj_na_meseci(mesec,god, 5,2018) * nadomest;
+       return cena;
+   }
+
+
+   float getNadomest() { return nadomest; }
+
+
+   unsigned int getMesec() { return mesec; }
+
+
+   unsigned int getGod() { return god; }
+
+
+};
+
+
+class User {
+   char ime[100];
+   Game **games;
+   int n;
+public:
+   User(const char *ime = "", Game **games = 0, int n = 0) {
+       strcpy(this->ime, ime);
+       this->games = new Game*[n];
+       this->games = games;
+       this->n = n;
+   }
+
+
+   User &operator+=(Game &ob) {
+       for (int i = 0; i < n; ++i) {
+           if (strcmp(games[i]->getIme(), ob.getIme()) == 0) throw ExistingGame();
+       }
+
+
+       Game **temp = new Game*[n + 1];
+       for (int i = 0; i < n; ++i) {
+           temp[i] = games[i];
+       }
+       SubscriptionGame *ptr = dynamic_cast<SubscriptionGame*>(&ob);
+       if (ptr){
+           temp[n++] = new SubscriptionGame(*ptr);
+       }
+       else {
+           temp[n++] = new Game(ob);
+       }
+       //temp[n++] = ob;
+       games = temp;
+       return *this;
+   }
+
+
+   char *get_name() { return ime; }
+
+
+   int get_games_numer() { return n; }
+
+
+
+
+   friend ostream &operator<<(ostream &out, User &ob) {
+       out << "\nUser: " << ob.ime << '\n';
+       for (int i = 0; i < ob.n; ++i) {
+           SubscriptionGame *ptr = dynamic_cast<SubscriptionGame *>(ob.games[i]);
+           if (ptr) {
+               out << "- " << *ptr;
+           } else out << "- " << *ob.games[i];
+       }
+       out << '\n';
+       return out;
+   }
+
+
+   int total_spent (){
+       float suma = 0.0;
+       for (int i = 0; i < n ; ++i) {
+           suma += games[i]->getCena();
+       }
+       return round(suma);
+   }
+};
+
+
+
+
+int main() {
+   int test_case_num;
+
+
+   cin >> test_case_num;
+
+
+   // for Game
+   char game_name[100];
+   float game_price;
+   bool game_on_sale;
+
+
+   // for SubscritionGame
+   float sub_game_monthly_fee;
+   int sub_game_month, sub_game_year;
+
+
+   // for User
+   char username[100];
+   int num_user_games;
+
+
+   if (test_case_num == 1) {
+       cout << "Testing class Game and operator<< for Game" << std::endl;
+       cin.get();
+       cin.getline(game_name, 100);
+       //cin.get();
+       cin >> game_price >> game_on_sale;
+
+
+       Game g(game_name, game_price, game_on_sale);
+
+
+       cout << g;
+   } else if (test_case_num == 2) {
+       cout << "Testing class SubscriptionGame and operator<< for SubscritionGame" << std::endl;
+       cin.get();
+       cin.getline(game_name, 100);
+
+
+       cin >> game_price >> game_on_sale;
+
+
+       cin >> sub_game_monthly_fee;
+       cin >> sub_game_month >> sub_game_year;
+
+
+       SubscriptionGame sg(game_name, game_price, game_on_sale, sub_game_monthly_fee, sub_game_month, sub_game_year);
+       cout << sg;
+   } else if (test_case_num == 3) {
+       cout << "Testing operator>> for Game" << std::endl;
+       Game g;
+
+
+       cin >> g;
+
+
+       cout << g;
+   } else if (test_case_num == 4) {
+       cout << "Testing operator>> for SubscriptionGame" << std::endl;
+       SubscriptionGame sg;
+
+
+       cin >> sg;
+
+
+       cout << sg;
+   } else if (test_case_num == 5) {
+       cout << "Testing class User and operator+= for User" << std::endl;
+       cin.get();
+       cin.getline(username, 100);
+       User u(username);
+
+
+       int num_user_games;
+       int game_type;
+       cin >> num_user_games;
+
+
+       try {
+
+
+           for (int i = 0; i < num_user_games; ++i) {
+
+
+               cin >> game_type;
+
+
+               Game *g;
+               // 1 - Game, 2 - SubscriptionGame
+               if (game_type == 1) {
+                   cin.get();
+                   cin.getline(game_name, 100);
+
+
+                   cin >> game_price >> game_on_sale;
+                   g = new Game(game_name, game_price, game_on_sale);
+               } else if (game_type == 2) {
+                   cin.get();
+                   cin.getline(game_name, 100);
+
+
+                   cin >> game_price >> game_on_sale;
+
+
+                   cin >> sub_game_monthly_fee;
+                   cin >> sub_game_month >> sub_game_year;
+                   g = new SubscriptionGame(game_name, game_price, game_on_sale, sub_game_monthly_fee, sub_game_month,
+                                            sub_game_year);
+               }
+
+
+               //cout<<(*g);
+
+
+
+
+               u += (*g);
+           }
+       } catch (ExistingGame &ex) {
+           ex.message();
+       }
+
+
+       cout << u;
+
+
+//    cout<<"\nUser: "<<u.get_username()<<"\n";
+
+
+//    for (int i=0; i < u.get_games_number(); ++i){
+//        Game * g;
+//        SubscriptionGame * sg;
+//        g = &(u.get_game(i));
+
+
+//        sg = dynamic_cast<SubscriptionGame *> (g);
+
+
+//        if (sg){
+//          cout<<"- "<<(*sg);
+//        }
+//        else {
+//          cout<<"- "<<(*g);
+//        }
+//        cout<<"\n";
+//    }
+
+
+   } else if (test_case_num == 6) {
+       cout << "Testing exception ExistingGame for User" << std::endl;
+       cin.get();
+       cin.getline(username, 100);
+       User u(username);
+
+
+       int num_user_games;
+       int game_type;
+       cin >> num_user_games;
+
+
+       for (int i = 0; i < num_user_games; ++i) {
+
+
+           cin >> game_type;
+
+
+           Game *g;
+           // 1 - Game, 2 - SubscriptionGame
+           if (game_type == 1) {
+               cin.get();
+               cin.getline(game_name, 100);
+
+
+               cin >> game_price >> game_on_sale;
+               g = new Game(game_name, game_price, game_on_sale);
+           } else if (game_type == 2) {
+               cin.get();
+               cin.getline(game_name, 100);
+
+
+               cin >> game_price >> game_on_sale;
+
+
+               cin >> sub_game_monthly_fee;
+               cin >> sub_game_month >> sub_game_year;
+               g = new SubscriptionGame(game_name, game_price, game_on_sale, sub_game_monthly_fee, sub_game_month,
+                                        sub_game_year);
+           }
+
+
+           //cout<<(*g);
+
+
+           try {
+               u += (*g);
+           }
+           catch (ExistingGame &ex) {
+               ex.message();
+           }
+       }
+
+
+       cout << u;
+
+
+//      for (int i=0; i < u.get_games_number(); ++i){
+//          Game * g;
+//          SubscriptionGame * sg;
+//          g = &(u.get_game(i));
+
+
+//          sg = dynamic_cast<SubscriptionGame *> (g);
+
+
+//          if (sg){
+//            cout<<"- "<<(*sg);
+//          }
+//          else {
+//            cout<<"- "<<(*g);
+//          }
+//          cout<<"\n";
+//      }
+   } else if (test_case_num == 7) {
+       cout << "Testing total_spent method() for User" << std::endl;
+       cin.get();
+       cin.getline(username, 100);
+       User u(username);
+
+
+       int num_user_games;
+       int game_type;
+       cin >> num_user_games;
+
+
+       for (int i = 0; i < num_user_games; ++i) {
+
+
+           cin >> game_type;
+
+
+           Game *g;
+           // 1 - Game, 2 - SubscriptionGame
+           if (game_type == 1) {
+               cin.get();
+               cin.getline(game_name, 100);
+
+
+               cin >> game_price >> game_on_sale;
+               g = new Game(game_name, game_price, game_on_sale);
+           } else if (game_type == 2) {
+               cin.get();
+               cin.getline(game_name, 100);
+
+
+               cin >> game_price >> game_on_sale;
+
+
+               cin >> sub_game_monthly_fee;
+               cin >> sub_game_month >> sub_game_year;
+               g = new SubscriptionGame(game_name, game_price, game_on_sale, sub_game_monthly_fee, sub_game_month,
+                                        sub_game_year);
+           }
+
+
+           //cout<<(*g);
+
+
+
+
+           u += (*g);
+       }
+
+
+       cout << u;
+
+
+       cout << "Total money spent: $" << u.total_spent() << endl;
+   }
+}
+
+
+Zadaca 7
+#include<iostream>
+#include<string.h>
+using namespace std;
+
+
+class Karticka{
+protected:
+   char smetka[16];
+   int pin;
+   bool povekjePin;
+public:
+   Karticka(char* smetka,int pin){
+       strcpy(this->smetka,smetka);
+       this->pin=pin;
+       this->povekjePin=false;
+   }
+   // дополниете ја класата
+   virtual int tezinaProbivanje(){
+       int ctr = 0;
+       int tmp = pin;
+       while (tmp > 0){
+           tmp /= 10;
+           ctr++;
+       }
+       return ctr;
+   }
+
+
+   friend ostream& operator<<(ostream& COUT, Karticka& ob){
+       COUT << ob.smetka << ": " << ob.tezinaProbivanje() << "\n";
+       int a = ob.tezinaProbivanje();
+       return COUT;
+   }
+
+
+
+
+   bool getDopolnitelenPin(){return povekjePin;}
+
+
+   char* getSmetka(){return smetka;}
+
+
+};
+
+
+class OutOfBoundException{
+public:
+   void print(){
+       cout << "Brojot na pin kodovi ne moze da go nadmine dozvolenoto\n";
+   }
+};
+//вметнете го кодот за SpecijalnaKarticka
+class SpecijalnaKarticka : public Karticka {
+   int *pinovi = nullptr;
+   int n = 0;
+   static int p;
+public:
+   SpecijalnaKarticka(char *smetka, int pin)
+           : Karticka(smetka, pin) {
+       povekjePin = true;
+   }
+
+
+   int tezinaProbivanje()override{
+       return (Karticka::tezinaProbivanje() + n);
+   }
+
+
+   friend ostream& operator<<(ostream& COUT, SpecijalnaKarticka& ob){
+       COUT << ob.smetka << ": " << ob.tezinaProbivanje() << "\n";
+       return COUT;
+   }
+
+
+   SpecijalnaKarticka& operator+=(int pin){
+       if (n > 5) throw OutOfBoundException();
+       int *tmp = new int[n + 1];
+       for (int i = 0; i < n; ++i) {
+           tmp[i] = pinovi[i];
+       }
+       tmp[n++] = pin;
+       pinovi = tmp;
+       return *this;
+   }
+
+
+};
+int SpecijalnaKarticka::p = 4;
+
+
+
+
+class Banka {
+private:
+   char naziv[30];
+   Karticka *karticki[20];
+   int broj;
+   static int LIMIT;
+public:
+   Banka(char *naziv, Karticka** karticki,int broj ){
+       strcpy(this->naziv,naziv);
+       for (int i=0;i<broj;i++){
+           //ako kartickata ima dopolnitelni pin kodovi
+           if (karticki[i]->getDopolnitelenPin()){
+               this->karticki[i]=new SpecijalnaKarticka(*dynamic_cast<SpecijalnaKarticka*>(karticki[i]));
+           }
+           else this->karticki[i]=new Karticka(*karticki[i]);
+       }
+       this->broj=broj;
+   }
+   ~Banka(){
+       for (int i=0;i<broj;i++) delete karticki[i];
+   }
+
+
+   //да се дополни класата
+   static void setLIMIT(int l){LIMIT = l;}
+
+
+   void pecatiKarticki(){
+       cout << "Vo bankata " << naziv << " moze da se probijat kartickite:\n";
+       for (int i = 0; i < broj; ++i) {
+           if (karticki[i]->tezinaProbivanje() <= LIMIT)
+               cout << *karticki[i];
+       }
+   }
+
+
+   void dodadiDopolnitelenPin(char *smetka, int novPin) {
+       for (int i = 0; i < broj; ++i) {
+           if (strcmp(karticki[i]->getSmetka(), smetka) == 0) {
+               SpecijalnaKarticka *ptr = dynamic_cast<SpecijalnaKarticka *>(karticki[i]);
+               if (ptr) {
+                   *ptr += novPin;
+               }
+           }
+       }
+   }
+};
+int Banka::LIMIT = 7;
+
+
+
+
+
+
+int main(){
+
+
+   Karticka **niza;
+   int n,m,pin;
+   char smetka[16];
+   bool daliDopolnitelniPin;
+   cin>>n;
+   niza=new Karticka*[n];
+   for (int i=0;i<n;i++){
+       cin>>smetka;
+       cin>>pin;
+       cin>>daliDopolnitelniPin;
+       if (!daliDopolnitelniPin)
+           niza[i]=new Karticka(smetka,pin);
+       else
+           niza[i]=new SpecijalnaKarticka(smetka,pin);
+   }
+
+
+   Banka komercijalna("Komercijalna",niza,n);
+   for (int i=0;i<n;i++) delete niza[i];
+   delete [] niza;
+   cin>>m;
+   for (int i=0;i<m;i++){
+       cin>>smetka>>pin;
+
+
+       try{
+           komercijalna.dodadiDopolnitelenPin(smetka,pin);
+       }
+       catch (OutOfBoundException){
+           OutOfBoundException().print();
+       }
+
+
+   }
+
+
+   Banka::setLIMIT(5);
+
+
+   komercijalna.pecatiKarticki();
+
+
+}
+
+
+Zadaca 8
+#include <iostream>
+#include <cstring>
+
+
+using namespace std;
+
+
+class Koncert{
+   char naziv[20];
+   char lokacija[100];
+   static double popust;
+   double bilet;
+public:
+   Koncert(char *naziv, char *lokacija, double bilet) : bilet(bilet){
+       strcpy(this->naziv, naziv);
+       strcpy(this->lokacija, lokacija);
+   }
+
+
+   static void setSezonskiPopust(double p){popust = p;}
+   static double getSezonskiPopust(){return popust;}
+
+
+   virtual double cena(){
+       return (bilet - bilet * popust );
+   }
+
+
+   char* getNaziv(){return naziv;}
+};
+double Koncert::popust = 0.2;
+
+
+class ElektronskiKoncert : public Koncert{
+   char *imeDJ;
+   double vreme;
+   bool daliDnevna;
+public:
+   ElektronskiKoncert(char *naziv, char *lokacija, double bilet, char* imeDJ, double vreme, bool daliDnevna)
+           : Koncert(naziv,lokacija,bilet), vreme(vreme), daliDnevna(daliDnevna){
+       this->imeDJ = new char[strlen(imeDJ) + 1];
+       strcpy(this->imeDJ, imeDJ);
+   }
+
+
+   double cena()override{
+       double c = Koncert::cena();
+       if (vreme >= 7) c += 360;
+       else if (vreme > 5) c += 150;
+       if (daliDnevna) c -= 50;
+       else c += 100;
+       return c;
+   }
+};
+
+
+void najskapKoncert(Koncert **koncerti, int n){
+   Koncert *najskap = koncerti[0];
+   int ctr = 0;
+   for (int i = 0; i < n; ++i) {
+       if (koncerti[i]->cena() > najskap->cena()) najskap = koncerti[i];
+
+
+       ElektronskiKoncert* ek = dynamic_cast<ElektronskiKoncert *>(koncerti[i]);
+       if (ek) ctr++;
+   }
+   cout << "Najskap koncert: " << najskap->getNaziv() << " " << najskap->cena() << '\n';
+   cout << "Elektronski koncerti: " << ctr << " od vkupno " << n << "\n";
+}
+
+
+bool prebarajKoncert(Koncert ** koncerti, int n, char * naziv, bool elektronski){
+   for (int i = 0; i < n; ++i) {
+       if (!elektronski && strcmp(koncerti[i]->getNaziv(),naziv) == 0) {
+           cout << koncerti[i]->getNaziv() << " " << koncerti[i]->cena() << '\n';
+           return true;
+       }
+       if (elektronski){
+           ElektronskiKoncert* ek = dynamic_cast<ElektronskiKoncert *>(koncerti[i]);
+           if (ek && strcmp(ek->getNaziv(), naziv) == 0) {
+               cout << koncerti[i]->getNaziv() << " " << koncerti[i]->cena() << '\n';
+               return true;
+           }
+       }
+   }
+   return false;
+}
+
+
+int main(){
+
+
+   int tip,n,novaCena;
+   char naziv[100], lokacija[100], imeDJ[40];
+   bool dnevna;
+   float cenaBilet, novPopust;
+   float casovi;
+
+
+   cin>>tip;
+   if (tip==1){//Koncert
+       cin>>naziv>>lokacija>>cenaBilet;
+       Koncert k1(naziv,lokacija,cenaBilet);
+       cout<<"Kreiran e koncert so naziv: "<<k1.getNaziv()<<endl;
+   }
+   else if (tip==2){//cena - Koncert
+       cin>>naziv>>lokacija>>cenaBilet;
+       Koncert k1(naziv,lokacija,cenaBilet);
+       cout<<"Osnovna cena na koncertot so naziv "<<k1.getNaziv()<< " e: " <<k1.cena()<<endl;
+   }
+   else if (tip==3){//ElektronskiKoncert
+       cin>>naziv>>lokacija>>cenaBilet>>imeDJ>>casovi>>dnevna;
+       ElektronskiKoncert s(naziv,lokacija,cenaBilet,imeDJ,casovi,dnevna);
+       cout<<"Kreiran e elektronski koncert so naziv "<<s.getNaziv()<<" i sezonskiPopust "<<s.getSezonskiPopust()<<endl;
+   }
+   else if (tip==4){//cena - ElektronskiKoncert
+       cin>>naziv>>lokacija>>cenaBilet>>imeDJ>>casovi>>dnevna;
+       ElektronskiKoncert s(naziv,lokacija,cenaBilet,imeDJ,casovi,dnevna);
+       cout<<"Cenata na elektronskiot koncert so naziv "<<s.getNaziv()<<" e: "<<s.cena()<<endl;
+   }
+   else if (tip==5) {//najskapKoncert
+
+
+   }
+   else if (tip==6) {//prebarajKoncert
+       Koncert ** koncerti = new Koncert *[5];
+       int n;
+       koncerti[0] = new Koncert("Area","BorisTrajkovski",350);
+       koncerti[1] = new ElektronskiKoncert("TomorrowLand","Belgium",8000,"Afrojack",7.5,false);
+       koncerti[2] = new ElektronskiKoncert("SeaDance","Budva",9100,"Tiesto",5,true);
+       koncerti[3] = new Koncert("Superhiks","PlatoUkim",100);
+       koncerti[4] = new ElektronskiKoncert("CavoParadiso","Mykonos",8800,"Guetta",3,true);
+       char naziv[100];
+       najskapKoncert(koncerti,5);
+   }
+   else if (tip==7){//prebaraj
+       Koncert ** koncerti = new Koncert *[5];
+       int n;
+       koncerti[0] = new Koncert("Area","BorisTrajkovski",350);
+       koncerti[1] = new ElektronskiKoncert("TomorrowLand","Belgium",8000,"Afrojack",7.5,false);
+       koncerti[2] = new ElektronskiKoncert("SeaDance","Budva",9100,"Tiesto",5,true);
+       koncerti[3] = new Koncert("Superhiks","PlatoUkim",100);
+       koncerti[4] = new ElektronskiKoncert("CavoParadiso","Mykonos",8800,"Guetta",3,true);
+       char naziv[100];
+       bool elektronski;
+       cin>>elektronski;
+       if(prebarajKoncert(koncerti,5, "Area",elektronski))
+           cout<<"Pronajden"<<endl;
+       else cout<<"Ne e pronajden"<<endl;
+
+
+       if(prebarajKoncert(koncerti,5, "Area",!elektronski))
+           cout<<"Pronajden"<<endl;
+       else cout<<"Ne e pronajden"<<endl;
+
+
+   }
+   else if (tip==8){//smeni cena
+       Koncert ** koncerti = new Koncert *[5];
+       int n;
+       koncerti[0] = new Koncert("Area","BorisTrajkovski",350);
+       koncerti[1] = new ElektronskiKoncert("TomorrowLand","Belgium",8000,"Afrojack",7.5,false);
+       koncerti[2] = new ElektronskiKoncert("SeaDance","Budva",9100,"Tiesto",5,true);
+       koncerti[3] = new Koncert("Superhiks","PlatoUkim",100);
+       koncerti[2] -> setSezonskiPopust(0.9);
+       najskapKoncert(koncerti,4);
+   }
+
+
+   return 0;
+}
+
+
+Zadaca 9
+#include <iostream>
+#include <cstring>
+
+
+using namespace std;
+
+
+class Trud{
+   char vid;
+   int god;
+public:
+   Trud(char vid='X', int god=0) : vid(vid), god(god){}
+
+
+   char getVid(){return vid;}
+   int getGod(){return god;}
+
+
+   friend istream& operator>>(istream& CIN, Trud& ob){
+       CIN >> ob.vid >> ob.god;
+       return CIN;
+   }
+};
+
+
+class Student{
+   char ime[30];
+   int indeks;
+   int god_upis;
+   int *oceni;
+   int n;
+public:
+   Student(char *ime, int indeks, int god_upis, int *oceni, int n)
+           : indeks(indeks), god_upis(god_upis), n(n){
+       strcpy(this->ime, ime);
+       this->oceni = new int[n];
+       for (int i = 0; i < n; ++i) {
+           this->oceni[i] = oceni[i];
+       }
+   }
+
+
+   int getGod(){return god_upis;}
+
+
+   virtual double rang(){
+       int sum = 0;
+       for (int i = 0; i < n; ++i) {
+           sum += oceni[i];
+       }
+       return (double)sum / n;
+   }
+
+
+   friend ostream& operator<<(ostream& COUT, Student& ob){
+       COUT << ob.indeks << " " << ob.ime << " " << ob.god_upis << " " << ob.rang() << '\n';
+       return COUT;
+   }
+
+
+   int getIndeks(){return indeks;}
+};
+
+
+class Exception{
+public:
+   void print(){cout << "Ne moze da se vnese dadeniot trud\n";}
+};
+
+
+
+
+class PhDStudent : public Student{
+   Trud* trudovi;
+   int m;
+   static int trudC;
+   static int trudJ;
+public:
+   PhDStudent(char *ime, int indeks, int god_upis, int *oceni, int n, Trud *trudovi, int m)
+           : Student(ime, indeks, god_upis, oceni, n) {
+       int ctr = 0;
+       for (int i = 0; i < m; ++i) {
+           if (trudovi[i].getGod() < god_upis) Exception().print();
+           else ctr++;
+       }
+       this->m = ctr;
+       this->trudovi = new Trud[ctr];
+
+
+       int j = 0;
+
+
+       for (int i = 0; i < m; ++i) {
+           if (trudovi[i].getGod() >= god_upis) this->trudovi[j++] = trudovi[i];
+       }
+
+
+
+
+   }
+
+
+   static void setTrudC(int a){trudC = a;}
+   static void setTrudJ(int a){trudJ = a;}
+
+
+   double rang()override{
+       double r = Student::rang();
+       for (int i = 0; i < m; ++i) {
+           r += (trudovi[i].getVid() == 'c' || trudovi[i].getVid() == 'C') ? trudC : trudJ;
+       }
+       return r;
+   }
+
+
+   PhDStudent& operator+= (Trud& t){
+       if (t.getGod() < this->getGod()) throw Exception();
+       Trud* tmp = new Trud[m + 1];
+       for (int i = 0; i < m; ++i) {
+           tmp[i] = trudovi[i];
+       }
+       tmp[m++] = t;
+       trudovi = tmp;
+       return *this;
+   }
+};
+int PhDStudent::trudC = 1;
+int PhDStudent::trudJ = 3;
+
+
+int main(){
+   int testCase;
+   cin >> testCase;
+
+
+   int god, indeks, n, god_tr, m, n_tr;
+   int izbor; //0 za Student, 1 za PhDStudent
+   char ime[30];
+   int oceni[50];
+   char tip;
+   Trud trud[50];
+
+
+   if (testCase == 1){
+       cout << "===== Testiranje na klasite ======" << endl;
+       cin >> ime;
+       cin >> indeks;
+       cin >> god;
+       cin >> n;
+       for (int j = 0; j < n; j++)
+           cin >> oceni[j];
+       Student s(ime, indeks, god, oceni, n);
+       cout << s;
+
+
+       cin >> ime;
+       cin >> indeks;
+       cin >> god;
+       cin >> n;
+       for (int j = 0; j < n; j++)
+           cin >> oceni[j];
+       cin >> n_tr;
+       for (int j = 0; j < n_tr; j++){
+           cin >> tip;
+           cin >> god_tr;
+           Trud t(tip, god_tr);
+           trud[j] = t;
+       }
+       PhDStudent phd(ime, indeks, god, oceni, n, trud, n_tr);
+       cout << phd;
+   }
+   if (testCase == 2){
+       cout << "===== Testiranje na operatorot += ======" << endl;
+       Student **niza;
+       cin >> m;
+       niza = new Student *[m];
+       for (int i = 0; i<m; i++){
+           cin >> izbor;
+           cin >> ime;
+           cin >> indeks;
+           cin >> god;
+           cin >> n;
+           for (int j = 0; j < n; j++)
+               cin >> oceni[j];
+
+
+           if (izbor == 0){
+               niza[i] = new Student(ime, indeks, god, oceni, n);
+           }
+           else{
+               cin >> n_tr;
+               for (int j = 0; j < n_tr; j++){
+                   cin >> tip;
+                   cin >> god_tr;
+                   Trud t(tip, god_tr);
+                   trud[j] = t;
+               }
+               niza[i] = new PhDStudent(ime, indeks, god, oceni, n, trud, n_tr);
+           }
+       }
+       // pecatenje na site studenti
+       cout << "\nLista na site studenti:\n";
+       for (int i = 0; i < m; i++)
+           cout << *niza[i];
+
+
+       // dodavanje nov trud za PhD student spored indeks
+       Trud t;
+       cin >> indeks;
+       cin >> t;
+
+
+       // vmetnete go kodot za dodavanje nov trud so pomos na operatorot +=
+       bool p = false;
+       for (int i = 0; i < m; ++i) {
+           PhDStudent* phd = dynamic_cast<PhDStudent *>(niza[i]);
+           if (phd){
+               try {
+                   if (phd->getIndeks() == indeks) {
+                       *phd += t;
+                       p = true;
+                   }
+               }
+               catch (Exception) {Exception().print();}
+           }
+       }
+       if (!p) cout << "Ne postoi PhD student so indeks " << indeks << '\n';
+       // pecatenje na site studenti
+       cout << "\nLista na site studenti:\n";
+       for (int i = 0; i < m; i++)
+           cout << *niza[i];
+   }
+   if (testCase == 3){
+       cout << "===== Testiranje na operatorot += ======" << endl;
+       Student **niza;
+       cin >> m;
+       niza = new Student *[m];
+       for (int i = 0; i<m; i++){
+           cin >> izbor;
+           cin >> ime;
+           cin >> indeks;
+           cin >> god;
+           cin >> n;
+           for (int j = 0; j < n; j++)
+               cin >> oceni[j];
+
+
+           if (izbor == 0){
+               niza[i] = new Student(ime, indeks, god, oceni, n);
+           }
+           else{
+               cin >> n_tr;
+               for (int j = 0; j < n_tr; j++){
+                   cin >> tip;
+                   cin >> god_tr;
+                   Trud t(tip, god_tr);
+                   trud[j] = t;
+               }
+               niza[i] = new PhDStudent(ime, indeks, god, oceni, n, trud, n_tr);
+           }
+       }
+       // pecatenje na site studenti
+       cout << "\nLista na site studenti:\n";
+       for (int i = 0; i < m; i++)
+           cout << *niza[i];
+
+
+       // dodavanje nov trud za PhD student spored indeks
+       Trud t;
+       cin >> indeks;
+       cin >> t;
+
+
+       // vmetnete go kodot za dodavanje nov trud so pomos na operatorot += od Testcase 2
+       bool p = false;
+       for (int i = 0; i < m; ++i) {
+           PhDStudent* phd = dynamic_cast<PhDStudent *>(niza[i]);
+           if (phd){
+               try {
+                   if (phd->getIndeks() == indeks) {
+                       *phd += t;
+                       p = true;
+                   }
+               }
+               catch (Exception) {Exception().print();}
+           }
+       }
+       if (!p) cout << "Ne postoi student so indeks " << indeks << '\n';
+
+
+       // pecatenje na site studenti
+       cout << "\nLista na site studenti:\n";
+       for (int i = 0; i < m; i++)
+           cout << *niza[i];
+   }
+   if (testCase == 4){
+       cout << "===== Testiranje na isklucoci ======" << endl;
+       cin >> ime;
+       cin >> indeks;
+       cin >> god;
+       cin >> n;
+       for (int j = 0; j < n; j++)
+           cin >> oceni[j];
+       cin >> n_tr;
+       for (int j = 0; j < n_tr; j++){
+           cin >> tip;
+           cin >> god_tr;
+           Trud t(tip, god_tr);
+           trud[j] = t;
+       }
+       PhDStudent phd(ime, indeks, god, oceni, n, trud, n_tr);
+       cout << phd;
+   }
+   if (testCase == 5){
+       cout << "===== Testiranje na isklucoci ======" << endl;
+       Student **niza;
+       cin >> m;
+       niza = new Student *[m];
+       for (int i = 0; i<m; i++){
+           cin >> izbor;
+           cin >> ime;
+           cin >> indeks;
+           cin >> god;
+           cin >> n;
+           for (int j = 0; j < n; j++)
+               cin >> oceni[j];
+
+
+           if (izbor == 0){
+               niza[i] = new Student(ime, indeks, god, oceni, n);
+           }
+           else{
+               cin >> n_tr;
+               for (int j = 0; j < n_tr; j++){
+                   cin >> tip;
+                   cin >> god_tr;
+                   Trud t(tip, god_tr);
+                   trud[j] = t;
+               }
+               niza[i] = new PhDStudent(ime, indeks, god, oceni, n, trud, n_tr);
+           }
+       }
+       // pecatenje na site studenti
+       cout << "\nLista na site studenti:\n";
+       for (int i = 0; i < m; i++)
+           cout << *niza[i];
+
+
+       // dodavanje nov trud za PhD student spored indeks
+       Trud t;
+       cin >> indeks;
+       cin >> t;
+
+
+       // vmetnete go kodot za dodavanje nov trud so pomos na operatorot += i spravete se so isklucokot
+       for (int i = 0; i < m; ++i) {
+           PhDStudent* phd = dynamic_cast<PhDStudent *>(niza[i]);
+           if (phd){
+               try {
+                   if (phd->getIndeks() == indeks) {
+                       *phd += t;
+                   }
+               }
+               catch (Exception) {Exception().print();}
+           }
+       }
+       // pecatenje na site studenti
+       cout << "\nLista na site studenti:\n";
+       for (int i = 0; i < m; i++)
+           cout << *niza[i];
+   }
+   if (testCase == 6){
+       cout << "===== Testiranje na static clenovi ======" << endl;
+       Student **niza;
+       cin >> m;
+       niza = new Student *[m];
+       for (int i = 0; i<m; i++){
+           cin >> izbor;
+           cin >> ime;
+           cin >> indeks;
+           cin >> god;
+           cin >> n;
+           for (int j = 0; j < n; j++)
+               cin >> oceni[j];
+
+
+           if (izbor == 0){
+               niza[i] = new Student(ime, indeks, god, oceni, n);
+           }
+           else{
+               cin >> n_tr;
+               for (int j = 0; j < n_tr; j++){
+                   cin >> tip;
+                   cin >> god_tr;
+                   Trud t(tip, god_tr);
+                   trud[j] = t;
+               }
+               niza[i] = new PhDStudent(ime, indeks, god, oceni, n, trud, n_tr);
+           }
+       }
+       // pecatenje na site studenti
+       cout << "\nLista na site studenti:\n";
+       for (int i = 0; i < m; i++)
+           cout << *niza[i];
+
+
+       int conf, journal;
+       cin >> conf;
+       cin >> journal;
+
+
+       //postavete gi soodvetnite vrednosti za statickite promenlivi
+       PhDStudent::setTrudC(conf);
+       PhDStudent::setTrudJ(journal);
+       // pecatenje na site studenti
+       cout << "\nLista na site studenti:\n";
+       for (int i = 0; i < m; i++)
+           cout << *niza[i];
+   }
+
+
+   return 0;
+}
+
+
+Zadaca 10
+#include <iostream>
+#include <cstring>
+#include <cstdlib>
+
+
+using namespace std;
+
+
+//место за вашиот код
+class Oglas{
+   char naslov[50];
+   char kategorija[30];
+   char opis[100];
+   float cena;
+public:
+   Oglas(const char *naslov="", const char *kategorija="", const char *opis="", float cena=-1)
+           : cena(cena){
+       strcpy(this->naslov, naslov);
+       strcpy(this->kategorija, kategorija);
+       strcpy(this->opis, opis);
+   }
+
+
+   bool operator>(Oglas& ob){
+       return cena > ob.cena;
+   }
+
+
+   friend ostream& operator<<(ostream& COUT, Oglas& ob){
+       COUT << ob.naslov << '\n' << ob.opis << '\n' << ob.cena << " evra\n";
+       return COUT;
+   }
+
+
+   float getCena(){return cena;}
+   char* getKategorija(){return kategorija;}
+};
+
+
+class NegativnaVrednost{
+public:
+   void print(){
+       cout << "Oglasot ima nevalidna vrednost za cenata i nema da bide evidentiran!\n";
+   }
+};
+class Oglasnik{
+   char ime[20];
+   Oglas* oglasi = nullptr;
+   int n = 0;
+public:
+   Oglasnik(char *ime) {strcpy(this->ime, ime);}
+
+
+   Oglasnik& operator+=(Oglas& o){
+       if (o.getCena() < 0) throw NegativnaVrednost();
+       Oglas* tmp = new Oglas[n + 1];
+       for (int i = 0; i < n; ++i) {
+           tmp[i] = oglasi[i];
+       }
+       tmp[n++] = o;
+       oglasi = tmp;
+       return *this;
+   }
+
+
+   friend ostream& operator<<(ostream& COUT, Oglasnik& ob){
+       COUT << ob.ime << '\n';
+       for (int i = 0; i < ob.n; ++i) {
+           COUT << ob.oglasi[i] << '\n';
+       }
+       return COUT;
+   }
+
+
+   void oglasiOdKategorija(const char *k){
+       for (int i = 0; i < n; ++i) {
+           if (strcmp(oglasi[i].getKategorija(),k) == 0) cout << oglasi[i] << '\n';
+       }
+   }
+   void najniskaCena(){
+       Oglas najevtin = oglasi[0];
+       for (int i = 1; i < n; ++i) {
+           if (oglasi[i].getCena() < najevtin.getCena()) najevtin = oglasi[i];
+       }
+       cout << najevtin;
+   }
+};
+
+
+
+
+int main(){
+
+
+   char naslov[50];
+   char kategorija[30];
+   char opis[100];
+   float cena;
+   char naziv[50];
+   char k[30];
+   int n;
+
+
+   int tip;
+   cin>>tip;
+
+
+   if (tip==1){
+       cout<<"-----Test Oglas & operator <<-----" <<endl;
+       cin.get();
+       cin.getline(naslov,49);
+       cin.getline(kategorija,29);
+       cin.getline(opis,99);
+       cin>>cena;
+       Oglas o(naslov, kategorija, opis, cena);
+       cout<<o;
+   }
+   else if (tip==2){
+       cout<<"-----Test Oglas & operator > -----" <<endl;
+       cin.get();
+       cin.getline(naslov,49);
+       cin.getline(kategorija,29);
+       cin.getline(opis,99);
+       cin>>cena;
+       Oglas o1(naslov, kategorija, opis, cena);
+       cin.get();
+       cin.getline(naslov,49);
+       cin.getline(kategorija,29);
+       cin.getline(opis,99);
+       cin>>cena;
+       Oglas o2(naslov, kategorija, opis, cena);
+       if (o1>o2) cout<<"Prviot oglas e poskap."<<endl;
+       else cout<<"Prviot oglas ne e poskap."<<endl;
+   }
+   else if (tip==3){
+       cout<<"-----Test Oglasnik, operator +=, operator << -----" <<endl ;
+       cin.get();
+       cin.getline(naziv,49);
+       cin>>n;
+       Oglasnik ogl(naziv);
+       for (int i = 0; i < n; i++){
+           cin.get();
+           cin.getline(naslov,49);
+           cin.getline(kategorija,29);
+           cin.getline(opis,99);
+           cin>>cena;
+           Oglas o(naslov, kategorija, opis, cena);
+           ogl+=o;
+       }
+       cout<<ogl;
+   }
+   else if (tip==4){
+       cout<<"-----Test oglasOdKategorija -----" <<endl ;
+       cin.get();
+       cin.getline(naziv,49);
+       cin>>n;
+       Oglasnik ogl(naziv);
+       for (int i = 0; i < n; i++){
+           cin.get();
+           cin.getline(naslov,49);
+           cin.getline(kategorija,29);
+           cin.getline(opis,99);
+           cin>>cena;
+           Oglas o(naslov, kategorija, opis, cena);
+           ogl+=o;
+       }
+       cin.get();
+       cin.getline(k,29);
+       cout<<"Oglasi od kategorijata: " <<k<<endl;
+       ogl.oglasiOdKategorija(k);
+
+
+   }
+   else if (tip==5){
+       cout<<"-----Test Exception -----" <<endl ;
+       cin.get();
+       cin.getline(naziv,49);
+       cin>>n;
+       Oglasnik ogl(naziv);
+       for (int i = 0; i < n; i++){
+           cin.get();
+           cin.getline(naslov,49);
+           cin.getline(kategorija,29);
+           cin.getline(opis,99);
+           cin>>cena;
+           Oglas o(naslov, kategorija, opis, cena);
+           try{
+               ogl+=o;
+           }
+           catch (NegativnaVrednost) {NegativnaVrednost().print();}
+
+
+       }
+       cout<<ogl;
+
+
+   }
+   else if (tip==6){
+       cout<<"-----Test najniskaCena -----" <<endl ;
+       cin.get();
+       cin.getline(naziv,49);
+       cin>>n;
+       Oglasnik ogl(naziv);
+       for (int i = 0; i < n; i++){
+           cin.get();
+           cin.getline(naslov,49);
+           cin.getline(kategorija,29);
+           cin.getline(opis,99);
+           cin>>cena;
+           Oglas o(naslov, kategorija, opis, cena);
+           ogl+=o;
+       }
+       cout<<"Oglas so najniska cena:"<<endl;
+       ogl.najniskaCena();
+
+
+   }
+   else if (tip==7){
+       cout<<"-----Test All -----" <<endl ;
+       cin.get();
+       cin.getline(naziv,49);
+       cin>>n;
+       Oglasnik ogl(naziv);
+       for (int i = 0; i < n; i++){
+           cin.get();
+           cin.getline(naslov,49);
+           cin.getline(kategorija,29);
+           cin.getline(opis,99);
+           cin>>cena;
+           Oglas o(naslov, kategorija, opis, cena);
+           try{
+               ogl+=o;
+           }
+           catch (NegativnaVrednost) {NegativnaVrednost().print();}
+       }
+       cout<<ogl;
+
+
+       cin.get();
+       cin.get();
+       cin.getline(k,29);
+       cout<<"Oglasi od kategorijata: " <<k<<endl;
+       ogl.oglasiOdKategorija(k);
+
+
+       cout<<"Oglas so najniska cena:"<<endl;
+       ogl.najniskaCena();
+
+
+   }
+
+
+   return 0;
+}
+
+
+Zadaca 11
+#include<iostream>
+#include<string.h>
+using namespace std;
+
+
+//место за вашиот код
+class Delo{
+   char ime[50];
+   int god;
+   char zemja[50];
+public:
+   Delo(){}
+   Delo(char *ime, int god, char* zemja) : god(god){
+       strcpy(this->ime,ime);
+       strcpy(this->zemja,zemja);
+   }
+
+
+   int getGod(){return god;}
+   char* getZemja(){return zemja;}
+   char* getIme(){return ime;}
+
+
+   bool operator==(Delo& d){
+       return strcmp(this->ime, d.ime) == 0;
+   }
+};
+
+
+class Pretstava{
+protected:
+   Delo delo;
+   int karti;
+   char data[15];
+public:
+   Pretstava(Delo delo, int karti, char* data): karti(karti){
+       this->delo = delo;
+       strcpy(this->data,data);
+   }
+   int getKarti(){return karti;}
+   virtual int cena(){
+       int c = 0;
+       if (delo.getGod() >= 1900) c += 50;
+       else if (delo.getGod() >= 1800) c += 75;
+       else c += 100;
+
+
+       if (strcmp(delo.getZemja(),"Italija") == 0) c += 100;
+       else if (strcmp(delo.getZemja(),"Rusija") == 0) c += 150;
+       else c += 80;
+
+
+       return c;
+   }
+
+
+   Delo getDelo(){return delo;}
+};
+
+
+class Opera : public Pretstava{
+public:
+   Opera(Delo delo, int karti, char* data) : Pretstava(delo,karti,data){}
+
+
+   using Pretstava::cena;
+};
+
+
+class Balet : public Pretstava{
+   static int cenaplus;
+public:
+   Balet(Delo delo, int karti, char* data) : Pretstava(delo,karti,data){}
+
+
+   static void setCenaBalet(int c){cenaplus = c;}
+
+
+   int cena()override{
+       return Pretstava::cena() + cenaplus;
+   }
+
+
+};
+int Balet::cenaplus = 150;
+int prihod(Pretstava** pretstavi, int n){
+   int suma = 0;
+   for (int i = 0; i < n; ++i) {
+       suma += pretstavi[i]->cena() * pretstavi[i]->getKarti();
+   }
+   return suma;
+}
+
+
+int brojPretstaviNaDelo(Pretstava** pretstavi, int n, Delo& d) {
+   int ctr = 0;
+   for (int i = 0; i < n; ++i) {
+       if (pretstavi[i]->getDelo() == d) ctr++;
+   }
+   return ctr;
+}
+
+
+//citanje na delo
+Delo readDelo(){
+   char ime[50];
+   int godina;
+   char zemja[50];
+   cin>>ime>>godina>>zemja;
+   return Delo(ime,godina,zemja);
+}
+//citanje na pretstava
+Pretstava* readPretstava(){
+   int tip; //0 za Balet , 1 za Opera
+   cin>>tip;
+   Delo d=readDelo();
+   int brojProdadeni;
+   char data[15];
+   cin>>brojProdadeni>>data;
+   if (tip==0)  return new Balet(d,brojProdadeni,data);
+   else return new Opera(d,brojProdadeni,data);
+}
+
+
+int main(){
+   int test_case;
+   cin>>test_case;
+
+
+   switch(test_case){
+       case 1:
+           //Testiranje na klasite Opera i Balet
+       {
+           cout<<"======TEST CASE 1======="<<endl;
+           Pretstava* p1=readPretstava();
+           cout<<p1->getDelo().getIme()<<endl;
+           Pretstava* p2=readPretstava();
+           cout<<p2->getDelo().getIme()<<endl;
+       }break;
+
+
+       case 2:
+           //Testiranje na  klasite Opera i Balet so cena
+       {
+           cout<<"======TEST CASE 2======="<<endl;
+           Pretstava* p1=readPretstava();
+           cout<<p1->cena()<<endl;
+           Pretstava* p2=readPretstava();
+           cout<<p2->cena()<<endl;
+       }break;
+
+
+       case 3:
+           //Testiranje na operator ==
+       {
+           cout<<"======TEST CASE 3======="<<endl;
+           Delo f1=readDelo();
+           Delo f2=readDelo();
+           Delo f3=readDelo();
+
+
+           if (f1==f2) cout<<"Isti se"<<endl; else cout<<"Ne se isti"<<endl;
+           if (f1==f3) cout<<"Isti se"<<endl; else cout<<"Ne se isti"<<endl;
+
+
+       }break;
+
+
+       case 4:
+           //testiranje na funkcijata prihod
+       {
+           cout<<"======TEST CASE 4======="<<endl;
+           int n;
+           cin>>n;
+           Pretstava **pole=new Pretstava*[n];
+           for (int i=0;i<n;i++){
+               pole[i]=readPretstava();
+
+
+           }
+           cout<<prihod(pole,n);
+       }break;
+
+
+       case 5:
+           //testiranje na prihod so izmena na cena za 3d proekcii
+       {
+           cout<<"======TEST CASE 5======="<<endl;
+           int cenaBalet;
+           cin>>cenaBalet;
+           Balet::setCenaBalet(cenaBalet);
+           int n;
+           cin>>n;
+           Pretstava **pole=new Pretstava*[n];
+           for (int i=0;i<n;i++){
+               pole[i]=readPretstava();
+           }
+           cout<<prihod(pole,n);
+       }break;
+
+
+       case 6:
+           //testiranje na brojPretstaviNaDelo
+       {
+           cout<<"======TEST CASE 6======="<<endl;
+           int n;
+           cin>>n;
+           Pretstava **pole=new Pretstava*[n];
+           for (int i=0;i<n;i++){
+               pole[i]=readPretstava();
+           }
+           Delo f=readDelo();
+           cout<<brojPretstaviNaDelo(pole,n,f);
+       }break;
+   };
+   return 0;
+}
+Zadaca 12
+#include <iostream>
+#include <cstring>
+
+
+using namespace std;
+
+
+enum tip{smartfon, kompjuter};
+
+
+class Device{
+   char model[100];
+   tip t;
+   double casovi;
+   static int fixcasovi;
+   int god;
+public:
+   Device(){}
+   Device(char* model, tip t, int god){
+       strcpy(this->model, model);
+       this->t = t;
+       this->god = god;
+   }
+
+
+   static void setPocetniCasovi(int a) {fixcasovi = a;}
+
+
+   double casoviProverka(){
+       double c = fixcasovi;
+       if (god > 2015) c += 2;
+       if (t==1) c += 2;
+       casovi = c;
+       return c;
+   }
+
+
+   friend ostream& operator<<(ostream& COUT, Device& ob){
+       COUT << ob.model << '\n';
+       COUT << ((ob.t == 0) ? "Mobilen" : "Laptop") << " " << ob.casoviProverka() << '\n';
+       return COUT;
+   }
+
+
+   int getGod(){return god;}
+};
+
+
+class InvalidProductionDate{
+public:
+   void print(){
+       cout << "Невалидна година на производство\n";
+   }
+};
+
+
+class MobileServis{
+   char adresa[100];
+   Device* devices = nullptr;
+   int n = 0;
+public:
+   MobileServis(char* adresa) { strcpy(this->adresa, adresa);}
+
+
+   MobileServis& operator+=(Device& d){
+       if (d.getGod() > 2019 || d.getGod() < 2000) throw InvalidProductionDate();
+       Device* tmp = new Device[n + 1];
+       for (int i = 0; i < n; ++i) {
+           tmp[i] = devices[i];
+       }
+       tmp[n++] = d;
+       devices = tmp;
+       return *this;
+   }
+
+
+   void pecatiCasovi(){
+       cout << "Ime: " << adresa << '\n';
+       for (int i = 0; i < n; ++i) {
+           cout << devices[i];
+       }
+   }
+
+
+};
+int Device::fixcasovi = 1;
+
+
+int main()
+{
+   int testCase;
+   cin >> testCase;
+   char ime[100];
+   int tipDevice;
+   int godina;
+   int n;
+   Device devices[50];
+   if (testCase == 1){
+       cout << "===== Testiranje na klasite ======" << endl;
+       cin >> ime;
+       cin >> tipDevice;
+       cin >> godina;
+       Device ig(ime,(tip)tipDevice,godina);
+       cin>>ime;
+       MobileServis t(ime);
+       cout<<ig;
+   }
+   if (testCase == 2){
+       cout << "===== Testiranje na operatorot += ======" << endl;
+       cin>>ime;
+       cin >> n;
+       MobileServis t(ime);
+       for(int i=0;i<n;i++)
+       {
+           cin >> ime;
+           cin >> tipDevice;
+           cin >> godina;
+           Device tmp(ime,(tip)tipDevice,godina);
+           try {
+               t += tmp;
+           }
+           catch (InvalidProductionDate){InvalidProductionDate().print();}
+       }
+       t.pecatiCasovi();
+   }
+   if (testCase == 3){
+       cout << "===== Testiranje na isklucoci ======" << endl;
+       cin>>ime;
+       cin >> n;
+       MobileServis t(ime);
+       for(int i=0;i<n;i++)
+       {
+           cin >> ime;
+           cin >> tipDevice;
+           cin >> godina;
+           Device tmp(ime,(tip)tipDevice,godina);
+           try {
+               t += tmp;
+           }
+           catch (InvalidProductionDate){InvalidProductionDate().print();}
+       }
+       t.pecatiCasovi();
+   }
+   if (testCase == 4){
+       cout <<"===== Testiranje na konstruktori ======"<<endl;
+       cin>>ime;
+       cin >> n;
+       MobileServis t(ime);
+       for(int i=0;i<n;i++)
+       {
+           cin >> ime;
+           cin >> tipDevice;
+           cin >> godina;
+           Device tmp(ime,(tip)tipDevice,godina);
+           try {
+               t += tmp;
+           }
+           catch (InvalidProductionDate) {InvalidProductionDate().print();}
+       }
+       MobileServis t2 = t;
+       t2.pecatiCasovi();
+   }
+   if (testCase == 5){
+       cout << "===== Testiranje na static clenovi ======" << endl;
+       cin>>ime;
+       cin >> n;
+       MobileServis t(ime);
+       for(int i=0;i<n;i++)
+       {
+           cin >> ime;
+           cin >> tipDevice;
+           cin >> godina;
+           Device tmp(ime,(tip)tipDevice,godina);
+           try {
+               t += tmp;
+           }
+           catch (InvalidProductionDate) {InvalidProductionDate().print();}
+       }
+       t.pecatiCasovi();
+       cout << "===== Promena na static clenovi ======" << endl;
+       Device::setPocetniCasovi(2);
+       t.pecatiCasovi();
+   }
+
+
+   if (testCase == 6){
+       cout << "===== Testiranje na kompletna funkcionalnost ======" << endl;
+       cin>>ime;
+       cin >> n;
+       MobileServis t(ime);
+       for(int i=0;i<n;i++)
+       {
+           cin >> ime;
+           cin >> tipDevice;
+           cin >> godina;
+           Device tmp(ime,(tip)tipDevice,godina);
+           try {
+               t += tmp;
+           }
+           catch (InvalidProductionDate) {InvalidProductionDate().print();}
+       }
+       Device::setPocetniCasovi(3);
+       MobileServis t2 = t;
+       t2.pecatiCasovi();
+   }
+
+
+   return 0;
+
+
+}
+
+
+
+
+Zadaca 13
+#include <iostream>
+#include <cstdlib>
+#include <cstring>
+
+
+using namespace std;
+
+
+// TODO...
+class Image{
+protected:
+   char *name;
+   char *user;
+   int w,h;
+public:
+   Image(const char* name = "untitled", const char* user = "unknown", int w = 800, int h = 800)
+           : w(w),h(h){
+       this->name = new char[strlen(name) + 1];
+       strcpy(this->name, name);
+       this->user = new char[strlen(user) + 1];
+       strcpy(this->user, user);
+   }
+
+
+   virtual int fileSize(){
+       return w * h * 3;
+   }
+
+
+   friend ostream& operator<<(ostream& COUT, Image& ob){
+       COUT << ob.name << " " << ob.user << " " << ob.fileSize() << '\n';
+       return COUT;
+   }
+
+
+   bool operator>(Image& ob) {return fileSize() > ob.fileSize();}
+};
+
+
+class TransparentImage : public Image{
+   bool transparent;
+public:
+   TransparentImage(const char* name = "untitled", const char* user = "unknown", int w = 800, int h = 800, bool transparent = true)
+   : Image(name,user,w,h), transparent(transparent){}
+
+
+       int fileSize()override{
+       if (transparent) return w * h * 4;
+       return w * h + ((w * h) / 8);
+   }
+
+
+   friend ostream& operator<<(ostream& COUT, TransparentImage& ob){
+       COUT << ob.name << " " << ob.user << " " << ob.fileSize() << '\n';
+       return COUT;
+   }
+};
+
+
+class Folder{
+protected:
+   char name[255];
+   char user[50];
+   Image* images[100];
+   int n;
+public:
+   Folder(char* name = "", char* user = "unknown"){
+       strcpy(this->name, name);
+       strcpy(this->user, user);
+       n = 0;
+   }
+
+
+   Image* getMaxFile(){
+       Image *maxi = images[0];
+       for (int i = 0; i < n; ++i) {
+           if (images[i]->fileSize() > maxi->fileSize()) maxi = images[i];
+       }
+       return maxi;
+   }
+
+
+   int folderSize(){
+       int sum = 0;
+       for (int i = 0; i < n; ++i) {
+           sum += images[i]->fileSize();
+       }
+       return sum;
+   }
+
+
+   Folder& operator+=(Image& i){
+       images[n++] = &i;
+       return *this;
+   }
+
+
+   friend ostream& operator<<(ostream& COUT, Folder ob){
+       COUT << ob.name << " " << ob.user << " \n--\n";
+       for (int i = 0; i < ob.n; ++i) {
+           COUT << *ob.images[i];
+       }
+       COUT << "--\nFolder size: " << ob.folderSize();
+       return COUT;
+   }
+
+
+   Image* operator[](int index){return images[index];}
+};
+
+
+Folder& max_folder_size(Folder* folders, int n){
+   Folder najgolem = folders[0];
+   int maxi = 0;
+   for (int i = 1; i < n; ++i) {
+       if (folders[i].folderSize() > najgolem.folderSize()) {
+           najgolem = folders[i];
+           maxi = i;
+       }
+   }
+   return folders[maxi];
+}
+
+
+
+
+int main() {
+
+
+   int tc; // Test Case
+
+
+   char name[255];
+   char user_name[51];
+   int w, h;
+   bool tl;
+
+
+   cin >> tc;
+
+
+   if (tc==1){
+       // Testing constructor(s) & operator << for class File
+
+
+       cin >> name;
+       cin >> user_name;
+       cin >> w;
+       cin >> h;
+
+
+
+
+       Image f1;
+
+
+       cout<< f1;
+
+
+       Image f2(name);
+       cout<< f2;
+
+
+       Image f3(name, user_name);
+       cout<< f3;
+
+
+       Image f4(name, user_name, w, h);
+       cout<< f4;
+   }
+   else if (tc==2){
+       // Testing constructor(s) & operator << for class TextFile
+       cin >> name;
+       cin >> user_name;
+       cin >> w >> h;
+       cin >> tl;
+
+
+       TransparentImage tf1;
+       cout<< tf1;
+
+
+       TransparentImage tf4(name, user_name, w, h, tl);
+       cout<< tf4;
+   }
+   else if (tc==3){
+       // Testing constructor(s) & operator << for class Folder
+       cin >> name;
+       cin >> user_name;
+
+
+       Folder f3(name, user_name);
+       cout<< f3;
+   }
+   else if (tc==4){
+       // Adding files to folder
+       cin >> name;
+       cin >> user_name;
+
+
+       Folder dir(name, user_name);
+
+
+       Image * f;
+       TransparentImage *tf;
+
+
+       int sub, fileType;
+
+
+       while (1){
+           cin >> sub; // Should we add subfiles to this folder
+           if (!sub) break;
+
+
+           cin >>fileType;
+           if (fileType == 1){ // Reading File
+               cin >> name;
+               cin >> user_name;
+               cin >> w >> h;
+               f = new Image(name,user_name, w, h);
+               dir += *f;
+           }
+           else if (fileType == 2){
+               cin >> name;
+               cin >> user_name;
+               cin >> w >> h;
+               cin >> tl;
+               tf = new TransparentImage(name,user_name, w, h, tl);
+               dir += *tf;
+           }
+       }
+       cout<<dir;
+   }
+   else if(tc==5){
+       // Testing getMaxFile for folder
+
+
+       cin >> name;
+       cin >> user_name;
+
+
+       Folder dir(name, user_name);
+
+
+       Image* f;
+       TransparentImage* tf;
+
+
+       int sub, fileType;
+
+
+       while (1){
+           cin >> sub; // Should we add subfiles to this folder
+           if (!sub) break;
+
+
+           cin >>fileType;
+           if (fileType == 1){ // Reading File
+               cin >> name;
+               cin >> user_name;
+               cin >> w >> h;
+               f = new Image(name,user_name, w, h);
+               dir += *f;
+           }
+           else if (fileType == 2){
+               cin >> name;
+               cin >> user_name;
+               cin >> w >> h;
+               cin >> tl;
+               tf = new TransparentImage(name,user_name, w, h, tl);
+               dir += *tf;
+           }
+       }
+       cout<< *(dir.getMaxFile());
+   }
+   else if(tc==6){
+       // Testing operator [] for folder
+
+
+       cin >> name;
+       cin >> user_name;
+
+
+       Folder dir(name, user_name);
+
+
+       Image* f;
+       TransparentImage* tf;
+
+
+       int sub, fileType;
+
+
+       while (1){
+           cin >> sub; // Should we add subfiles to this folder
+           if (!sub) break;
+
+
+           cin >>fileType;
+           if (fileType == 1){ // Reading File
+               cin >> name;
+               cin >> user_name;
+               cin >> w >> h;
+               f = new Image(name,user_name, w, h);
+               dir += *f;
+           }
+           else if (fileType == 2){
+               cin >> name;
+               cin >> user_name;
+               cin >> w >> h;
+               cin >> tl;
+               tf = new TransparentImage(name,user_name, w, h, tl);
+               dir += *tf;
+           }
+       }
+
+
+       cin >> sub; // Reading index of specific file
+       cout<< *dir[sub];
+   }
+   else if(tc==7){
+       // Testing function max_folder_size
+       int folders_num;
+
+
+       Folder dir_list[10];
+
+
+       Folder dir;
+       cin >> folders_num;
+
+
+       for (int i=0; i<folders_num; ++i){
+           cin >> name;
+           cin >> user_name;
+           dir = Folder(name, user_name);
+
+
+
+
+           Image* f;
+           TransparentImage *tf;
+
+
+           int sub, fileType;
+
+
+           while (1){
+               cin >> sub; // Should we add subfiles to this folder
+               if (!sub) break;
+
+
+               cin >>fileType;
+               if (fileType == 1){ // Reading File
+                   cin >> name;
+                   cin >> user_name;
+                   cin >> w >> h;
+                   f = new Image(name,user_name, w, h);
+                   dir += *f;
+               }
+               else if (fileType == 2){
+                   cin >> name;
+                   cin >> user_name;
+                   cin >> w >> h;
+                   cin >> tl;
+                   tf = new TransparentImage(name,user_name, w, h, tl);
+                   dir += *tf;
+               }
+           }
+           dir_list[i] = dir;
+       }
+
+
+       cout<<max_folder_size(dir_list, folders_num);
+   }
+   return 0;
+};
+Zadaca 14
+#include <iostream>
+#include <cstring>
+
+
+using namespace std;
+
+
+class SMS{
+protected:
+   char number[20];
+   float base_price;
+   static float TAX;
+public:
+   virtual float SMS_CENA(){return base_price;}
+   friend ostream& operator<<(ostream& out, SMS& ob){
+       out << "Tel: "<< ob.number <<
+           " - cena: "<< ob.SMS_CENA() << "den.\n";
+       return out;
+   }
+};
+float SMS::TAX = 18.0;
+
+
+class RegularSMS : public SMS{
+   char content[1000];
+   bool isRoaming;
+   static float rProcent;
+public:
+   RegularSMS (char *number = 0, float base_price=0.0, char* content=0, bool isRoaming=false){
+       strcpy(this->number, number);
+       strcpy(this->content, content);
+       this->base_price = base_price;
+       this->isRoaming = isRoaming;
+   }
+   float SMS_CENA() override {
+       float price = base_price * (float)(strlen(content)/160 + 1) ;
+       if (isRoaming) price += rProcent/100 * price;
+       else price += SMS::TAX/100 * price;
+       return price;
+   }
+   static void set_rProcent (float num) { rProcent = num;}
+};
+float RegularSMS::rProcent = 300.0;
+
+
+class SpecialSMS : public SMS{
+   bool isCharity;
+   static float sProcent;
+public:
+   SpecialSMS (char *number = 0, float base_price=0.0, bool isCharity=false){
+       strcpy(this->number, number);
+       this->base_price = base_price;
+       this->isCharity = isCharity;
+   }
+   float SMS_CENA() override {
+       float price = SMS::SMS_CENA();
+       if (isCharity) return price;
+       else return price += sProcent/100 * price;
+   }
+   static void set_sProcent (float num) { sProcent = num;}
+};
+float SpecialSMS::sProcent = 150.0;
+
+
+void vkupno_SMS(SMS** poraka, int n){
+   float rSum = 0.0, sSum = 0.0;
+   int rCtr = 0, sCtr = 0;
+   for (int i = 0; i < n; ++i) {
+       SpecialSMS* sPtr = dynamic_cast<SpecialSMS*>(poraka[i]);
+       RegularSMS* rPtr = dynamic_cast<RegularSMS*>(poraka[i]);
+       if (rPtr) {
+           rSum += rPtr->SMS_CENA();
+           rCtr++;
+       }
+       else if (sPtr) {
+           sSum += sPtr->SMS_CENA();
+           sCtr++;
+       }
+   }
+   cout << "Vkupno ima " << rCtr << " regularni SMS poraki i nivnata cena e: " << rSum << '\n';
+   cout << "Vkupno ima " << sCtr << " specijalni SMS poraki i nivnata cena e: " << sSum << '\n';
+}
+
+
+int main(){
+
+
+   char tel[20], msg[1000];
+   float cena;
+   float price;
+   int p;
+   bool roam, hum;
+   SMS  **sms;
+   int n;
+   int tip;
+
+
+   int testCase;
+   cin >> testCase;
+
+
+   if (testCase == 1){
+       cout << "====== Testing RegularSMS class ======" << endl;
+       cin >> n;
+       sms = new SMS *[n];
+
+
+       for (int i = 0; i < n; i++){
+           cin >> tel;
+           cin >> cena;
+           cin.get();
+           cin.getline(msg, 1000);
+           cin >> roam;
+           cout << "CONSTRUCTOR" << endl;
+           sms[i] = new RegularSMS(tel, cena, msg, roam);
+           cout << "OPERATOR <<" << endl;
+           cout << *sms[i];
+       }
+       for (int i = 0; i<n; i++) delete sms[i];
+       delete[] sms;
+   }
+   if (testCase == 2){
+       cout << "====== Testing SpecialSMS class ======" << endl;
+       cin >> n;
+       sms = new SMS *[n];
+
+
+       for (int i = 0; i < n; i++){
+           cin >> tel;
+           cin >> cena;
+           cin >> hum;
+           cout << "CONSTRUCTOR" << endl;
+           sms[i] = new SpecialSMS(tel, cena, hum);
+           cout << "OPERATOR <<" << endl;
+           cout << *sms[i];
+       }
+       for (int i = 0; i<n; i++) delete sms[i];
+       delete[] sms;
+   }
+   if (testCase == 3){
+       cout << "====== Testing method vkupno_SMS() ======" << endl;
+       cin >> n;
+       sms = new SMS *[n];
+
+
+       for (int i = 0; i<n; i++){
+
+
+           cin >> tip;
+           cin >> tel;
+           cin >> cena;
+           if (tip == 1) {
+
+
+               cin.get();
+               cin.getline(msg, 1000);
+               cin >> roam;
+
+
+               sms[i] = new RegularSMS(tel, cena, msg, roam);
+
+
+           }
+           else {
+               cin >> hum;
+
+
+               sms[i] = new SpecialSMS(tel, cena, hum);
+           }
+       }
+
+
+       vkupno_SMS(sms, n);
+       for (int i = 0; i<n; i++) delete sms[i];
+       delete[] sms;
+   }
+   if (testCase == 4){
+       cout << "====== Testing RegularSMS class with a changed percentage======" << endl;
+       SMS *sms1, *sms2;
+       cin >> tel;
+       cin >> cena;
+       cin.get();
+       cin.getline(msg, 1000);
+       cin >> roam;
+       sms1 = new RegularSMS(tel, cena, msg, roam);
+       cout << *sms1;
+
+
+       cin >> tel;
+       cin >> cena;
+       cin.get();
+       cin.getline(msg, 1000);
+       cin >> roam;
+       cin >> p;
+       RegularSMS::set_rProcent(p);
+       sms2 = new RegularSMS(tel, cena, msg, roam);
+       cout << *sms2;
+
+
+       delete sms1, sms2;
+   }
+   if (testCase == 5){
+       cout << "====== Testing SpecialSMS class with a changed percentage======" << endl;
+       SMS *sms1, *sms2;
+       cin >> tel;
+       cin >> cena;
+       cin >> hum;
+       sms1 = new SpecialSMS(tel, cena, hum);
+       cout << *sms1;
+
+
+       cin >> tel;
+       cin >> cena;
+       cin >> hum;
+       cin >> p;
+       SpecialSMS::set_sProcent(p);
+       sms2 = new SpecialSMS(tel, cena, hum);
+       cout << *sms2;
+
+
+       delete sms1, sms2;
+   }
+
+
+   return 0;
+}
+Zadaca 15
+#include<iostream>
+#include<cstring>
+using namespace std;
+
+
+class StudentKurs{
+protected:
+   char ime[30];
+   int ocenka;
+   bool daliUsno;
+   static unsigned int MAX;
+   static int MINOCENKA;
+public:
+   StudentKurs(char* ime,int finalenIspit){
+       strcpy(this->ime,ime);
+       this->ocenka=finalenIspit;
+       this->daliUsno=false;
+   }
+   //дополни ја класата
+   static void setMAX(int a){MAX = a;}
+
+
+   virtual int getocenka(){return ocenka;}
+
+
+   friend ostream& operator<<(ostream& COUT, StudentKurs& ob){
+       COUT << ob.ime << " --- " << ob.getocenka() << '\n';
+       return COUT;
+   }
+
+
+   bool getDaliUsno(){return daliUsno;}
+   static int getMINOCENKA(){return MINOCENKA;}
+   char *getIme(){return ime;}
+};
+unsigned int StudentKurs::MAX = 10;
+int StudentKurs::MINOCENKA = 6;
+
+
+//вметни го кодот за StudentKursUsno
+class BadInputException{
+public:
+   void print(){
+       cout << "Greshna opisna ocenka\n";
+   }
+};
+
+
+char* smenistring(char* c){
+   int ctr = 0;
+   for (int i = 0; i < strlen(c) + 1; ++i) {
+       if (isalpha(c[i])) ctr++;
+   }
+   char* newstring = new char[ctr + 1];
+   int j = 0;
+   for (int i = 0; i < strlen(c) + 1; ++i) {
+       if (isalpha(c[i])) newstring[j++] = c[i];
+   }
+   newstring[ctr] = '\0';
+   return newstring;
+}
+
+
+class StudentKursUsno : public StudentKurs{
+   char *opisna;
+public:
+   StudentKursUsno(char* ime,int finalenIspit)
+   : StudentKurs(ime,finalenIspit){
+       opisna = "";
+       daliUsno = true;
+   }
+//    ~StudentKursUsno(){delete [] opisna;}
+
+
+   int getocenka()override{
+       int o = ocenka;
+       if (strcmp(opisna,"odlicen") == 0){ o += 2; }
+       else if (strcmp(opisna,"dobro") == 0){ o += 1; }
+       else if (strcmp(opisna,"losho") == 0){ o -= 1; }
+       if (o > MAX) o = MAX;
+       return o;
+   }
+
+
+   friend ostream& operator<<(ostream& COUT, StudentKursUsno& ob){
+       COUT << ob.ime << " --- " << ob.getocenka();
+       return COUT;
+   }
+
+
+   StudentKursUsno& operator+=(char* o){
+       for (int i = 0; i < strlen(o); ++i) {
+           if (!isalpha(o[i])) throw BadInputException();
+       }
+       this->opisna = new char[strlen(o) + 1];
+       strcpy(this->opisna, o);
+       return *this;
+   }
+
+
+   void setOpisnaOcenka(char *o){
+       try {
+           *this += o;
+       }
+       catch (BadInputException) {
+           BadInputException().print();
+//            *this += smenistring(o);
+               this->setOpisnaOcenka(smenistring(o));
+       }
+   }
+};
+
+
+
+
+class KursFakultet{
+private:
+   char naziv[30];
+   StudentKurs *studenti[20];
+   int broj;
+
+
+public:
+   KursFakultet(char *naziv, StudentKurs** studenti,int broj ){
+       strcpy(this->naziv,naziv);
+       for (int i=0;i<broj;i++){
+           //ako studentot ima usno isprashuvanje
+           if (studenti[i]->getDaliUsno()){
+               this->studenti[i]=new StudentKursUsno(*dynamic_cast<StudentKursUsno*>(studenti[i]));
+           }
+           else this->studenti[i]=new StudentKurs(*studenti[i]);
+       }
+       this->broj=broj;
+   }
+   ~KursFakultet(){
+       for (int i=0;i<broj;i++) delete studenti[i];
+   }
+
+
+   //дополни ја класата
+   void pecatiStudenti(){
+       cout << "Kursot " << naziv << " go polozile:\n";
+       for (int i = 0; i < broj; ++i) {
+           if (studenti[i]->getocenka() >= StudentKurs::getMINOCENKA())
+               cout << *studenti[i];
+       }
+   }
+
+
+   void postaviOpisnaOcenka(char *ime, char *opisnaOcenka){
+       for (int i = 0; i < broj; ++i) {
+           if (strcmp(studenti[i]->getIme(),ime) == 0 && studenti[i]->getDaliUsno()){
+               StudentKursUsno* ptr = dynamic_cast<StudentKursUsno*>(studenti[i]);
+               if (ptr)
+                   ptr->setOpisnaOcenka(opisnaOcenka);
+           }
+       }
+   }
+};
+
+
+int main(){
+
+
+   StudentKurs **niza;
+   int n,m,ocenka;
+   char ime[30],opisna[10];
+   bool daliUsno;
+   cin>>n;
+   niza=new StudentKurs*[n];
+   for (int i=0;i<n;i++){
+       cin>>ime;
+       cin>>ocenka;
+       cin>>daliUsno;
+       if (!daliUsno)
+           niza[i]=new StudentKurs(ime,ocenka);
+       else
+           niza[i]=new StudentKursUsno(ime,ocenka);
+   }
+
+
+   KursFakultet programiranje("OOP",niza,n);
+   for (int i=0;i<n;i++) delete niza[i];
+   delete [] niza;
+   cin>>m;
+
+
+   for (int i=0;i<m;i++){
+       cin>>ime>>opisna;
+       programiranje.postaviOpisnaOcenka(ime,opisna);
+   }
+
+
+   StudentKurs::setMAX(9);
+
+
+   programiranje.pecatiStudenti();
+
+
+}
+Zadaca 16
+// вашиот код треба да биде тука
+#include <iostream>
+#include <cstring>
+
+
+using namespace std;
+
+
+class Transport{
+protected:
+   char destinacija[50];
+   int cena, rastojanie;
+public:
+   Transport(char* destinacija, int cena, int rastojanie)
+   : cena(cena), rastojanie(rastojanie){
+       strcpy(this->destinacija, destinacija);
+   }
+
+
+   virtual float cenaTransport(){return cena;}
+   virtual void pecati(){
+       cout << destinacija << " " << rastojanie << " " << cenaTransport() << '\n';
+   }
+};
+
+
+class AvtomobilTransport : public Transport{
+   bool sofer;
+public:
+   AvtomobilTransport(char* destinacija, int cena, int rastojanie, bool sofer)
+   : Transport(destinacija, cena, rastojanie), sofer(sofer){}
+
+
+   float cenaTransport()override{
+       return ((sofer) ? 1.2 * cena : cena);
+   }
+};
+
+
+class KombeTransport : public Transport{
+   int luge;
+public:
+   KombeTransport(char* destinacija, int cena, int rastojanie, int luge)
+   : Transport(destinacija, cena, rastojanie), luge(luge){}
+
+
+   float cenaTransport()override{
+       float c = cena - luge * 200;
+       if (c < 0) return 0; else return c;
+   }
+
+
+};
+
+
+void pecatiPoloshiPonudi(Transport** ponudi, int n, Transport& T){
+   for (int i = 0; i < n; ++i) {
+       for (int j = i; j < n; ++j) {
+           if (ponudi[i]->cenaTransport() > ponudi[j]->cenaTransport()){
+               swap(ponudi[i],ponudi[j]);
+           }
+       }
+   }
+   for (int i = 0; i < n; ++i) {
+       if (ponudi[i]->cenaTransport() > T.cenaTransport())
+           ponudi[i]->pecati();
+   }
+}
+
+
+int main(){
+
+
+   char destinacija[20];
+   int tip,cena,rastojanie,lugje;
+   bool shofer;
+   int n;
+   cin>>n;
+   Transport  **ponudi;
+   ponudi=new Transport *[n];
+
+
+   for (int i=0;i<n;i++){
+
+
+       cin>>tip>>destinacija>>cena>>rastojanie;
+       if (tip==1) {
+           cin>>shofer;
+           ponudi[i]=new AvtomobilTransport(destinacija,cena,rastojanie,shofer);
+
+
+       }
+       else {
+           cin>>lugje;
+           ponudi[i]=new KombeTransport(destinacija,cena,rastojanie,lugje);
+       }
+
+
+
+
+   }
+
+
+   AvtomobilTransport nov("Ohrid",2000,600,false);
+   pecatiPoloshiPonudi(ponudi,n,nov);
+
+
+   for (int i=0;i<n;i++) delete ponudi[i];
+   delete [] ponudi;
+   return 0;
+}
+
+
+Zadaca 17
+#include <iostream>
+#include <cstring>
+using namespace std;
+
+
+// vashiot kod ovde
+class FudbalskaEkipa{
+protected:
+   char name[100];
+   char coach[100];
+   int goals[10];
+public:
+   virtual int uspeh(){
+       int sum = 0;
+       for (int i = 0; i < 10; ++i) {
+           sum += goals[i];
+       }
+       return sum;
+   };
+   bool operator>(FudbalskaEkipa& ob) {return uspeh() > ob.uspeh();}
+
+   friend ostream& operator<<(ostream& COUT, FudbalskaEkipa& ob){
+       COUT << ob.name << '\n' << ob.coach << '\n' << ob.uspeh() << '\n';
+       return COUT;
+   }
+
+   FudbalskaEkipa& operator+=(int g){
+       for (int i = 0; i < 9; ++i) {
+           goals[i] = goals[i + 1];
+       }
+       goals[9] = g;
+       return *this;
+   }
+};
+
+
+class Klub : public FudbalskaEkipa{
+   int titles;
+public:
+   Klub(char* coach, int goals[10], char* name, int titles)
+   : titles(titles){
+       strcpy(this->coach, coach);
+       strcpy(this->name, name);
+       for (int i = 0; i < 10; ++i) {
+           this->goals[i] = goals[i];
+       }
+   }
+
+
+   int uspeh()override{ return FudbalskaEkipa::uspeh() * 3 + titles * 1000; }
+};
+
+
+class Reprezentacija : public FudbalskaEkipa{
+   int matches;
+public:
+   Reprezentacija(char* coach, int goals[10], char* name, int matches)
+       : matches(matches){
+       strcpy(this->coach, coach);
+       strcpy(this->name, name);
+       for (int i = 0; i < 10; ++i) {
+           this->goals[i] = goals[i];
+       }
+   }
+   int uspeh()override{ return FudbalskaEkipa::uspeh() * 3 + matches * 50; }
+   friend ostream& operator<<(ostream& COUT, Reprezentacija& ob){
+       COUT << ob.name << '\n' << ob.coach << '\n' << ob.uspeh() << '\n';
+       return COUT;
+   }
+};
+
+
+void najdobarTrener(FudbalskaEkipa** ekipi, int n){
+   int maxi = 0;
+   int maxuspeh = 0;
+   for (int i = 0; i < n; ++i) {
+       if (ekipi[i]->uspeh() > maxuspeh){
+           maxi = i;
+           maxuspeh = ekipi[i]->uspeh();
+       }
+   }
+   cout << *ekipi[maxi];
+}
+
+
+int main() {
+   int n;
+   cin >> n;
+   FudbalskaEkipa **ekipi = new FudbalskaEkipa *[n];
+   char coach[100];
+   int goals[10];
+   char x[100];
+   int tg;
+   for (int i = 0; i < n; ++i) {
+       int type;
+       cin >> type;
+       cin.getline(coach, 100);
+       cin.getline(coach, 100);
+       for (int j = 0; j < 10; ++j) {
+           cin >> goals[j];
+       }
+       cin.getline(x, 100);
+       cin.getline(x, 100);
+       cin >> tg;
+       if (type == 0) {
+           ekipi[i] = new Klub(coach, goals, x, tg);
+       } else if (type == 1) {
+           ekipi[i] = new Reprezentacija(coach, goals, x, tg);
+       }
+   }
+   cout << "===== SITE EKIPI =====" << endl;
+   for (int i = 0; i < n; ++i) {
+       cout << *ekipi[i];
+   }
+   cout << "===== DODADI GOLOVI =====" << endl;
+   for (int i = 0; i < n; ++i) {
+       int p;
+       cin >> p;
+       cout << "dodavam golovi: " << p << endl;
+       *ekipi[i] += p;
+   }
+   cout << "===== SITE EKIPI =====" << endl;
+   for (int i = 0; i < n; ++i) {
+       cout << *ekipi[i];
+   }
+   cout << "===== NAJDOBAR TRENER =====" << endl;
+   najdobarTrener(ekipi, n);
+   for (int i = 0; i < n; ++i) {
+       delete ekipi[i];
+   }
+   delete[] ekipi;
+   return 0;
+}
+
+
+
